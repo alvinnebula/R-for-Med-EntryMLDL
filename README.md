@@ -5,7 +5,7 @@ _This repo is for an entry to Medical ML/DL training. Dr. Shafiq and me, we will
 
 ## Programming Basic in R
 ### C1. Foundations of programming practice
-[play_with_dataframe](/Programming_Basic_in_R/play_with_dataframe.Rmd)
+Step 1: for the future, we have to start with some stupid kinds of stuff. [play_with_dataframe](/Programming_Basic_in_R/play_with_dataframe.Rmd)
 
 
 
