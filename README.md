@@ -1,10 +1,14 @@
 # R-for-Med-EntryMLDL
 
-_This repo is for an entry to Medical ML/DL training. Dr. Shafiq and me, we will start the practice here since Jul 2024_
+_This repo is for an entry to Medical ML/DL training. Dr. Shafiq and me, we will start the practice here since Jul 2023_
 
 ## Programming Basic in R
-### Foundations of programming practice
+### C1. Foundations of programming practice
+
+
 
 ## Probability & Statistic Exercises in R
+TODO
 
 ## Machine Learning Trials
+TODO
