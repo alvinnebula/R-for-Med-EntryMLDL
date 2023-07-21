@@ -18,7 +18,7 @@ alvin will start updating under this subtitle for warming up
 
   _alvin will start uploading his Prob&Stat homework from Dr.Stewart's class. (Questions by Dr.Stewart, completed by alvin)_
 
-  [1. The Martingale Strategy for Roulette](Probability_Statistic_Exercises_in_R/Martingale_Strategy_for_Roulette/Roulette_simulation.Rmd)
+  [1. Martingale Strategy for Roulette](Probability_Statistic_Exercises_in_R/Martingale_Strategy_for_Roulette/Roulette_simulation.Rmd)
 
 ## Machine Learning Trials
 TODO
