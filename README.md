@@ -5,6 +5,7 @@ _This repo is for an entry to Medical ML/DL training. Dr. Shafiq and me, we will
 
 ## Programming Basic in R
 ### C1. Foundations of programming practice
+[play_with_df]()
 
 
 
