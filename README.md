@@ -15,8 +15,8 @@ alvin will start updating under this subtitle for warming up
 ## Probability & Statistic Exercises in R
 ### C1. Real-world strategies.
 - Step 1: after warming up, we can start with some Prob-based tasks to combine R programming with Probability & Statistics.
-  _
-
+  _alvin will start uploading his Prob&Stat homework from Dr.Stewart's class. (Questions by Dr.Stewart, completed by alvin)_
+  [1. The Martingale Strategy for Roulette]()
 
 ## Machine Learning Trials
 TODO
