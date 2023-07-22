@@ -20,5 +20,10 @@ alvin will start updating under this subtitle for warming up
 
   [1. Martingale Strategy for Roulette](Probability_Statistic_Exercises_in_R/Martingale_Strategy_for_Roulette/Roulette_simulation.Rmd)
 
+## Visualization and statistical analysis in R
+### C1. Plotting assistance for Dr. Shafiq's research
+- Step 1: after our first meeting, adnan & alvin have planned to start with some basic tasks wrapping up for us.
+
 ## Machine Learning Trials
 TODO
+
