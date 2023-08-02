@@ -1,0 +1,40 @@
+---
+title: "Plotting"
+author: "Alvin Chen"
+date: "2023-08-02"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+df = read.csv("/Users/alvin.nebula23/Desktop/Alvin's Folder/MS Courses/Healthcare/R-for-Med-EntryMLDL/Visualization_Statistical_Analysis_in_R/fdata.csv")
+```
+
+```{r}
+# check how many rows with a same gene name
+grouped_data <- df %>%
+  group_by(Gene.name) %>%
+  summarise(num_gene = n()) %>% 
+  arrange(desc(num_gene))
+```
+
+```{r}
+# remove rows with gene name == 'blank'
+cleaned_data <- df %>%
+  filter(!is.na(Gene.name) & Gene.name != "")
+```
+
+```{r}
+cleaned_data
+```
+
+```{r}
+ggplot(data = cleaned_data, aes(x = Intensity.M_1, y = Intensity.M_2)) +
+  geom_point() 
+```
+
+
+
