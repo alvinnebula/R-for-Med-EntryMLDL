@@ -23,8 +23,9 @@ alvin will start updating under this subtitle for warming up
 ## Visualization and statistical analysis in R
 ### C1. Plotting assistance for Dr. Shafiq's research
 - Step 1: after our first meeting, adnan & alvin have planned to start with some basic tasks wrapping up for us.
-  [data crud](Visualization_Statistical_Analysis_in_R/data_crud.Rmd)
-  [plotting example](Visualization_Statistical_Analysis_in_R/plotting.Rmd)
+  [1. data crud](Visualization_Statistical_Analysis_in_R/data_crud.Rmd)
+  
+  [2. plotting example](Visualization_Statistical_Analysis_in_R/plotting.Rmd)
 
 ## Machine Learning Trials
 TODO
