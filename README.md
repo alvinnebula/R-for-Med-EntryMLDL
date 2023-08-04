@@ -25,8 +25,10 @@ alvin will start updating under this subtitle for warming up
 - Step 1: after our first meeting, adnan & alvin have planned to start with some basic tasks wrapping up for us.
 
   _requirements:_
-    1. Log2FC
-    2. p-value
+    1. mean
+    2. Log2FC
+       * formula - #
+    4. p-value
 
   [1. data crud](Visualization_Statistical_Analysis_in_R/data_crud.Rmd)
   BioReplicate
