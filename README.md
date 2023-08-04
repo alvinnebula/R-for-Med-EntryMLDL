@@ -29,6 +29,8 @@ alvin will start updating under this subtitle for warming up
     2. p-value
 
   [1. data crud](Visualization_Statistical_Analysis_in_R/data_crud.Rmd)
+  BioReplicate
+  
   
   [2. plotting example](Visualization_Statistical_Analysis_in_R/plotting.Rmd)
 
