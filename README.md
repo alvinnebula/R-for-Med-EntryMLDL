@@ -23,7 +23,11 @@ alvin will start updating under this subtitle for warming up
 ## Visualization and statistical analysis in R
 ### C1. Plotting assistance for Dr. Shafiq's research
 - Step 1: after our first meeting, adnan & alvin have planned to start with some basic tasks wrapping up for us.
+
   _requirements:_
+    1. Log2FC
+    2. P value
+    3. ggplot2
 
   [1. data crud](Visualization_Statistical_Analysis_in_R/data_crud.Rmd)
   
