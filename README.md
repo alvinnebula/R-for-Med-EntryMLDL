@@ -26,8 +26,7 @@ alvin will start updating under this subtitle for warming up
 
   _requirements:_
     1. Log2FC
-    2. P value
-    3. ggplot2
+    2. p-value
 
   [1. data crud](Visualization_Statistical_Analysis_in_R/data_crud.Rmd)
   
