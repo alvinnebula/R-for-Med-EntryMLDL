@@ -1,0 +1,119 @@
+---
+title: "Plotting"
+author: "Alvin Chen"
+date: "2023-08-02"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+df = read.csv("/Users/alvin.nebula23/Desktop/Alvin's Folder/MS Courses/Healthcare/R-for-Med-EntryMLDL/Visualization_Statistical_Analysis_in_R/fdata.csv")
+```
+
+```{r}
+df_update = read.csv("/Users/alvin.nebula23/Desktop/Alvin's Folder/MS Courses/Healthcare/R-for-Med-EntryMLDL/Visualization_Statistical_Analysis_in_R/fdata_updated.csv")
+```
+
+```{r}
+# check how many rows with a same gene name
+grouped_data <- df %>%
+  group_by(Gene.name) %>%
+  summarise(num_gene = n()) %>% 
+  arrange(desc(num_gene)) %>% 
+  filter(num_gene != 1)
+```
+
+```{r}
+# check how many rows with a same gene name, update data
+grouped_data_update <- df_update %>%
+  group_by(Gene.name) %>%
+  summarise(num_gene = n()) %>% 
+  arrange(desc(num_gene)) %>% 
+  filter(num_gene != 1)
+```
+
+```{r}
+# how many gene names being added
+num_blank_gene_ori <- grouped_data$num_gene[grouped_data$Gene.name == '']
+num_blank_gene <- grouped_data_update$num_gene[grouped_data_update$Gene.name == '']
+num_blank_gene_ori - num_blank_gene
+```
+
+```{r}
+# hwo many duplcaite gene names
+duplicate_gene_ori <- nrow(grouped_data)
+duplicate_gene <- nrow(grouped_data_update)
+print(paste('duplicated gene names in original:', duplicate_gene_ori))
+print(paste('duplicated gene names in updated:', duplicate_gene))
+duplicate_gene - duplicate_gene_ori
+```
+
+```{r}
+# sorry we have to remove blank
+# remove rows with gene name == 'blank'
+cleaned_data <- df_update %>%
+  filter(!is.na(Gene.name) & Gene.name != "")
+```
+
+```{r}
+# rows we removed
+cleaned_rows <- nrow(cleaned_data)
+rows <- nrow(df_update)
+rows - cleaned_rows
+```
+
+```{r}
+cleaned_data
+```
+
+```{r}
+# add mean of M & 2D
+avg_added_data <- cleaned_data %>%
+  mutate(
+    Intensity.M_mean = (Intensity.M_1 + Intensity.M_2 + Intensity.M_3) / 3,
+    Intensity.2D_mean = (Intensity.2D_1 + Intensity.2D_2 + Intensity.2D_3) / 3
+  )
+# reorder the columns
+selected_columns <- c("X","Gene.name","First.Protein.Description","Intensity.M_mean", "Intensity.2D_mean")
+avg_added_data <-avg_added_data[, c(selected_columns, setdiff(names(avg_added_data), selected_columns))]
+
+# delete index
+df_wrangled <- subset(avg_added_data, select = -X)
+```
+
+```{r}
+# keep max-mean one to remove duplicate
+df_unique <- df_wrangled %>%
+  group_by(Gene.name) %>% 
+  filter(Intensity.M_mean == max(Intensity.M_mean) & Intensity.2D_mean == max(Intensity.2D_mean)) %>%
+  ungroup()
+```
+
+
+```{r}
+df_selected <- select(
+            df_unique, Gene.name, 
+            First.Protein.Description, 
+            Intensity.M_mean,
+            Intensity.2D_mean)
+```
+
+```{r}
+# add log2FC
+df_selected <- df_selected %>%
+  mutate(
+    log2FC = log2( Intensity.2D_mean / Intensity.M_mean)
+  )
+```
+
+
+
+
+
+
+
+
+
