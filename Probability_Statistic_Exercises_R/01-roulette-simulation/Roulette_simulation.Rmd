@@ -1,0 +1,317 @@
+---
+title: "The Martingale Strategy for Roulette"
+author: ' Yiwen Chen'
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    number_sections: yes
+    toc_depth: 3
+    toc_float: yes
+---
+
+```{r global options, include = FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE, cache=TRUE)
+```
+
+# Concept
+
+## What is Martingale strategy:
+
+Doubling the bet after every loss, so that the first win would recover all of the previous losses and win the original wager (amount equal to the first wager).
+
+## Think about: 
+
+The Martingale strategy appears to always end in positive earnings, regardless of how unlucky a string of spins may be but is the strategy actually profitable?
+
+## In this blog: 
+
+I will introduce the following questions:
+
+How to use `simulation` to calculate the average earnings of a gambler that uses Martingale strategy?
+
+How changing a parameter of `simulation` would impact the average earnings?
+
+How to use `simulation` to estimate the average number of plays before stopping?
+
+At the end, illustrate the limitations of `simulation`; identify simplifications or other sources of uncertainty.
+
+# Background
+
+## Roulette：
+
+In this `simulation`, the gambler would use Martingale strategy, which we cited above, to wager and to earn/lose money in Roulette.
+
+### Intruduction of Roulette
+
+A roulette table composed of 38 (or 37) evenly sized pockets on a wheel, and the pockets are respectively colored red, black, or green (which usually 18 in red, 18 in black and 2 in green).  What's more, the pockets are also numbered. 
+
+### How Martingale strategy works in Roulette
+Gamblers may wager on several aspects of the outcome. For example, one may place a wager that the randomly selected pocket will be red or odd numbered or will be a specific number.
+
+
+| **Play** | **Wager** | **Outcome** |**Earnings**|
+|:--------:|:---------:|:-----------:|:----------:|
+|    1     |     1     |    Black    |     -1     |
+|    2     |     2     |    Black    |     -3     |
+|    3     |     4     |    Black    |     +1     |
+
+
+# Simulation
+
+## Description
+
+| **Parameters** |         **Description**         |           **Starting Values**          |
+|:--------------:|:-------------------------------:|:--------------------------------------:|
+|      **B**     |         Starting budget         |                 $200                   |
+|      **W**     | Winnings threshold for stopping | $300 (Starting budget + $100 winnings) |
+|      **L**     |   Time threshold for stopping   |               1000 plays               |
+|      **M**     |     Casino’s maximum wager      |                 $100                   |  
+
+***Tips:***
+
+The range of any probability is 0-1.
+
+An impossible event has a probability of 0. 
+
+An event that is absolutely certain to occur has a probability of 1.
+
+Actually the roulette is not a 50-50 gambling typically due to the 2 green pockets exist in the total 38 pockets. 
+
+## Methods
+
+**We build those codes below to simulate the roulette in Martingale strategy.**
+
+As the table lists in the Description, during the roulette simulation, the gambler only stops for following reasons.
+
+1. Lose all money.
+
+2. Satisfied with $300 in his pocket.
+
+3. Maximum of 1,000 times roulette plays.
+
+To achieve the above "STOP" steps, we translate above sentences into numeric.
+
+1. B<=0
+
+2. W>=300
+
+3. L>=1000
+
+And then we design a function "stop_play" which returns gambler's "real-time" budget after each iteration to the variable that using (B<=0, W>=300, L>=1000) as three requirements to stop the iterations. If anyone of those three were be TRUE, the simulation would be terminated. If not, continue it. 
+
+```{r}
+library(dplyr)
+library(tidyverse)
+#' A single play of the Martingale strategy
+#'
+#' Takes a state list, spins the roulette wheel, returns the state list with updated values (for example, budget, plays, etc)
+#' @param state A list with the following entries: 
+#'   B              number, the budget
+#'   W              number, the budget threshold for successfully stoping
+#'   L              number, the maximum number of plays 
+#'   M              number, the casino wager limit
+#'   plays          integer, the number of plays executed
+#'   previous_wager number, the wager in the previous play (0 at first play)
+#'   previous_win   TRUE/FALSE, indicator if the previous play was a win (TRUE at first play)
+#' @return The updated state list
+one_play <- function(state){
+  
+    # Wager
+    proposed_wager <- ifelse(state$previous_win, 1, 2*state$previous_wager)
+    wager <- min(proposed_wager, state$M, state$B)
+    
+    # Spin of the wheel
+    red <- rbinom(1,1,18/38)
+    
+    # Update state
+    state$plays <- state$plays + 1
+    state$previous_wager <- wager
+    if(red){
+      # WIN
+      state$B <- state$B + wager
+      state$previous_win <- TRUE
+    }else{
+      # LOSE
+      state$B <- state$B - wager
+      state$previous_win <- FALSE
+    }
+  state
+}
+
+
+#' Stopping rule
+#'
+#' Takes the state list and determines if the gambler has to stop
+#' @param state A list.  See one_play
+#' @return TRUE/FALSE
+stop_play <- function(state){
+  if(state$B <= 0) return(TRUE)
+  if(state$plays >= state$L) return(TRUE)
+  if(state$B >= state$W) return(TRUE)
+  FALSE
+}
+
+
+#' Play roulette to either bankruptcy, success, or play limits
+#'
+#' @param B number, the starting budget
+#' @param W number, the budget threshold for successfully stoping
+#' @param L number, the maximum number of plays 
+#' @param M number, the casino wager limit
+#' @return A vector of budget values calculated after each play.
+one_series <- function(
+    B = 200
+  , W = 300
+  , L = 1000
+  , M = 100
+){
+
+  # initial state
+  state <- list(
+    B = B
+  , W = W
+  , L = L
+  , M = M
+  , plays = 0
+  , previous_wager = 0
+  , previous_win = TRUE
+  )
+  
+  # vector to store budget over series of plays
+  budget <- rep(NA, L)
+  
+  # For loop of plays
+  for(i in 1:L){
+    new_state <- state %>% one_play
+    budget[i] <- new_state$B
+    if(new_state %>% stop_play){
+      return(budget[1:i])
+    }
+    state <- new_state
+  }
+  budget    
+}
+
+# helper function
+get_last <- function(x) x[length(x)] 
+
+set.seed(10)
+plot(one_series(B=200, W=300, L=1000, M=100)-200, main = "earnings evolve with wager",xlab = "wager number",ylab = "earnings",type = 'b')
+set.seed(30)
+plot(one_series(B=200, W=300, L=1000, M=100)-200, main = "earnings evolve with wager",xlab = "wager number",ylab = "earnings",type = 'b')
+set.seed(100)
+plot(one_series(B=200, W=300, L=1000, M=100)-200, main = "earnings evolve with wager",xlab = "wager number",ylab = "earnings",type = 'b')
+```
+
+
+The function `one_series` will randomly show us the earnings the gambler get with the different wager number.
+
+The function `one_series(B=200, W=300, L=1000, M=100) - 200` means the final `budget` of this gambler minus the `starting budget`. 
+
+The function `set.seed()` is to set `different gambler` to observe how the earnings evolve with wager number.
+
+## Earnings - Wager in 10000 simulation
+
+We've randomly chose 3 gamblers to finish their Roulette above. And right now, we need this simulation run 10000 times. We build those code chunks below.
+
+```{r}
+# Simulation
+walk_out_money <- rep(NA, 10000)
+for(j in seq_along(walk_out_money)){
+  walk_out_money[j] <- one_series(B = 200, W = 300, L = 1000, M = 100) %>% get_last
+}
+# Walk out money distribution
+hist(walk_out_money, breaks = 100)
+
+# Estimated probability of walking out with extra cash
+mean(walk_out_money > 200)
+
+# Estimated earnings
+mean(walk_out_money - 200)
+```
+
+
+The estimated probability of `walking_out_money > 200` is 51.8%, and it seems like the Martingale strategy would be profitable, right?
+
+But the estimated earnings in `walk_out_money - 200` is -44.65, which shows: Even though we have a more than 50% chance to earn money, but our mean earnings are negative(1/4 our starting budget).
+
+We could find the Martingale strategy is not ideal strategy to be profitable.
+
+# Less greed more earning? --- Changing the winnings threshold (W) 
+
+We change one of the parameter of the simulation to see a very interesting topic that as the gambler's greed increasing, will the earnings get change? 
+
+It means we change the winning threshold that gambler leave the roulette, and plot a graph shows the correlation between earnings and winning threshold. Because we are curious about a proverb like more greed more loss.
+
+So, in the code chunk below, we supply W = 250, let's see what would happen.
+
+
+```{r}
+# Simulation
+walk_out_money <- rep(NA, 10000)
+for(j in seq_along(walk_out_money)){
+  walk_out_money[j] <- one_series(B = 200, W = 250, L = 1000, M = 100) %>% get_last
+}
+# Walk out money distribution
+hist(walk_out_money, breaks = 100)
+
+# Estimated probability of walking out with extra cash
+mean(walk_out_money > 200)
+
+# Estimated earnings
+mean(walk_out_money - 200)
+```
+
+The estimated probability of `walking_out_money > 200` is 69.72%, and it seems like as the gamblers were not willing to earn 100 dollars, but to earn 50 dollars to end his Roulette, they got almost extra 20% more to walk out with earnings, right? 
+
+In other words, less greed more earnings sometimes is true.
+
+But when we look into estimated earnings in `walk_out_money - 200` is -25.7, which means it just helps the gambler decrease their loss.
+
+```{r}
+max_W = seq(200,300, by=5)
+avg.earn = NA
+for (i in c(1:length(max_W))){
+  # Simulation
+  walk_out_money <- rep(NA, 10000)
+  for(j in seq_along(walk_out_money)){
+  walk_out_money[j] <- one_series(B = 200, W = 250, L = 1000, M = 100) %>%    
+    get_last
+ }
+  # Estimated earnings
+  avg.earn[i] = mean(walk_out_money - 200)
+}
+plot(x = max_W, y = avg.earn, type='b')  
+
+```
+
+It shows as the `maximum Winnings threshold for stopping`(W) has been changed in (200,300), how would the average earnings change.
+
+# Estimated average number before stopping
+
+```{r}
+Max_plays <- rep(NA, 10000)
+for(j in seq_along(Max_plays)){
+  Max_plays[j] <- one_series (B = 200, W = 300, L = 1000, M = 100) %>% 
+    length 
+  
+}
+Ave_max_plays <- mean (Max_plays)
+Ave_max_plays
+
+```
+
+We use a function "seq_along" to show the duration of each simulation which create a vector to record the average number of the iteration processing. The average "L" out of 1,000 times iteration is concentrated on approximately 203 times which means by the beginning of 204nd roulette, the "B<=0" or the "W>=300" have had happened. So, before the 204nd roulette, the budget and the winning threshold must be the key factors in the function "one_series".
+
+# Limitations of the simulation
+
++ As what we mentioned in estimated average number, we know the simulation have stopped for a "long time" before the time threshold processes to 1000 times. It means there is at least one redundancy that we could make it easy.
+
++ We set up a Casino’s maximum wager which is too much different from what happen in the real-casino roulette. We sometimes could see restriction in some casinos, but a highest wager as $100 seems like too rare. 
+
++ We set up the gamblers always leave their roulette after they won $100, but to consider the greed of humanity, it doesn't seem to be realistic.
+
+
+

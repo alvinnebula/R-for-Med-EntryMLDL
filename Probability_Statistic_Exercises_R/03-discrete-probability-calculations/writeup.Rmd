@@ -1,0 +1,208 @@
+---
+title: "Discrete Probability Calculations"
+author: "Yiwen Chen"
+date: "9/25/2021"
+output: 
+   html_document:
+     code_folding: hide
+     toc: true
+     toc_depth: 3
+     toc_float: true
+---
+
+## Introduction
+
+**How often does the better team win the World Series?** 
+
+The world series is a best-of-7 match-up between the champions of the American and National Leagues of Major League Baseball. I am going to explain probability calculations related to the world series, which may helps our general audience to figure out how often the better team win the World Series.
+
+## Background
+
+### Setup
+
+To help our audience to figure out this topic easily:
+
+**1.** I set up that **Braves** and **Yankees** are teams competing in the World Series. 
+
+**2.** I set up that in any given game, the probability that the Braves win is **P<sub>B</sub>** and the probability that the Yankees win is **P<sub>Y</sub>=1−P<sub>B</sub>**.
+
+### Questions
+
+I list 5 questions as follow to help you understand data science concept in this topic:
+
+**1.** What is the probability that the Braves win the World Series given that P<sub>B</sub>=0.55?
+
+**2.** What is the probability that the Braves win the World Series given that P<sub>B</sub>=x? 
+
+**3.** Suppose one could change the World Series to be best-of-9 or some other best-of-X series. What is the shortest series length so that P(Braves win World Series| P<sub>B</sub>=0.55)≥0.8?
+
+**4.** What is the shortest series length so that P(Braves win World Series| P<sub>B</sub>=x) ≥ 0.8? 
+
+**5.** Calculate P(P<sub>B</sub>=0.55|Braves win World Series in 7 games) under the assumption that either P<sub>B</sub>=0.55 or P<sub>B</sub>=0.45.
+
+### Stopping Rules
+
+I will briefly explain the rules of winning the World Series:
+
+To win the World Series, **Team** needs to win more than **half** of the **total** games. For example, if Braves win 4 games in the best-of-7 match-up, when the Braves get the 4th winning, the World Series would stop and the Braves win the championship. So, there is up to 7 games, and if one team get the 4th win, the world series would be end, and the team win the last game would be the winner.
+
+PS:The results of every single game is independent.
+
+## Methods
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+### 1.What is the probability that the Braves win the World Series given that P<sub>B</sub>=0.55?
+
+In this question, if Braves win the World Series, they would win the last game, and have 3 wins in previous games, but have at most 3 loses in previous games. So the the probability that the Braves win the World Series is: 
+
+```{r}
+pnbinom(3,4,0.55)
+```
+
+The probability that the Braves win the World Series given that P<sub>B</sub>=0.55 is *0.6082878*. So, based on P<sub>B</sub>=0.55, the Braves are more likely to win the World Series.
+
+### 2.What is the probability that the Braves win the World Series given that P<sub>B</sub>=x? 
+
+This will be a figure (see below) with P<sub>B</sub> on the x-axis and P(Braves win World Series) on the y-axis.
+
+I varied the P<sub>B</sub> to x: `x = (0,1), by=0.0001`. And the result would in a plot shown below:
+
+```{r}
+x <- seq(0,1,by = 0.0001 )
+y <- pnbinom(3,4,x)
+df <- data.frame(x,y)
+
+ggplot(
+       df, 
+       aes(x, y)
+       ) +
+  geom_line(color = "navy",
+            size = 0.75,
+            alpha = 2) +
+  scale_y_continuous(
+                     breaks = seq(0, 1, 0.2),
+                     ) +
+  scale_x_continuous(
+                     breaks = seq(0,1, 0.1),
+                     ) +
+  coord_cartesian(
+                  xlim = c(0.5,1)
+                  ) +
+  labs(title = "Probability of winning the World Series",
+       y = "P(Win World Series)",
+       x = "Probability of the Braves winning a head-to-head matchup"
+       ) +
+  theme(axis.text = element_text(size = 8, color = "grey")
+       ) +
+  theme(
+        axis.title = element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, size = 15)
+       ) +
+  theme(
+        panel.border = element_rect(color = "black", size = 0.3, fill = NA)
+       )
+  
+```
+
+The P<sub>B</sub> is on x-axis, P<sub>B</sub> is on y-axis. I use `seq(0,1,by = 0.0001)` to set the increment as 0.0001, which could make the relationship of y-x more accurate. When P<sub>B</sub> is larger than 0.5 (following the instruction that we change the scale of x-axis in 0.5-1.0), as the value of x increases, the value of the win ratio of Braves increases and would be infinitely close to 1.
+
+### 3.Suppose one could change the World Series to be best-of-9 or some other best-of-X series. What is the shortest series length so that P(Braves win World Series| P<sub>B</sub>=0.55)≥0.8?
+
+For best-of-x series, if Braves win the World Series, they would win more than a half of `x` games, but lose at most `x/2 -1` games.(the `x` must be an odd number).
+
+```{r}
+matches_win = seq(4,1000, by = 1)
+matches_loss = matches_win - 1
+P_win_ws = pnbinom(matches_loss, matches_win, 0.55)
+total_games = matches_win + matches_loss
+total_games[which(P_win_ws >= 0.8)][1]
+```
+
+Supposed that we could find a match the P(Braves win World Series| P<sub>B</sub>=0.55)≥0.8 in 1000 games of winning of Braves. The maximum number of its loss game is `matches_win - 1`. And then, it's easy to calculate a `pnbinom(matches_loss, matches_win, 0.55)` and just choose the matches that could make `P_win_ws >= 0.8`. In conclusion, as the result, 71 is the shortest series length.
+
+### 4.What is the shortest series length so that P(Braves win World Series| P<sub>B</sub>=x) ≥ 0.8? 
+
+This will be a figure (see below) with P<sub>B</sub> on the x-axis and series length is the y-axis.
+
+I varied the P<sub>B</sub> to prob_win: `prob_win = (0.5,1), by=0.0001`. And then, I made a forloop to calculate the probabilities of Braves winning the World Series: `P_win_ws` by the different `prob_win`. And the result would in a plot shown below: 
+
+```{r}
+prob_win = seq(0.5,1,by = 0.0001)
+short_length = NA
+for(i in 1:length(prob_win)){
+  matches_win = seq(4,1000, by = 1)
+  matches_loss = matches_win - 1
+  P_win_ws = pnbinom(matches_loss, matches_win, prob_win[i])
+  total_games = matches_win + matches_loss
+  short_length[i] <- total_games[which(P_win_ws >= 0.8)[1]]
+}
+df <- data.frame(prob_win,short_length)
+ggplot(
+       df, 
+       aes(x = prob_win , 
+           y = short_length)
+       ) +
+  geom_line(color = "navy",
+            size = 0.75,
+            alpha = 2) +
+  scale_x_continuous(
+                     breaks = seq(0.5,1, 0.1)
+                     ) +
+  scale_y_continuous(
+                     breaks = seq(0,2000, 200)
+                     ) +
+  labs(title = "Shortest Series so that P(Win WS given p) >= 0.8",
+       y = "Series Length",
+       x = "Probability of the Braves winning a head-to-head matchup"
+       ) +
+  theme(axis.text = element_text(size = 8, color = "grey")
+       ) +
+  theme(
+        axis.title = element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, size = 15)
+       ) +
+  theme(
+        panel.border = element_rect(color = "black", size = 0.3, fill = NA)
+       )
+  
+```
+
+As the P<sub>B</sub> is increasing, the shortest series length would decrease. And when the probability of the Braves win the World Series is more than 0.6, the shortest series length would be infinitely close to 1. 
+
+### 5.Calculate P(P<sub>B</sub>=0.55|Braves win World Series in 7 games) under the assumption that either P<sub>B</sub>=0.55 or P<sub>B</sub>=0.45. 
+
+Here is the `Bayes Rules` that I would use in the code chunks below:
+
+$$P(A|B) = \frac{P(B|A)P(A)}{P(B)}$$
+I use the parameters to match the `Bayes Rules`, P( A ) = P( P<sub>B</sub>=0.55 ), P( B ) = P( Braves win World Series in 7 games ).
+
+P( P<sub>B</sub>=0.55 | Braves win World Series in 7 games ) = P( Braves win World Series in 7 games | P<sub>B</sub>=0.55 ) * P( P<sub>B</sub>=0.55 ) / P( Braves win World Series in 7 games )
+
+So, if we are going to figure out the P( P<sub>B</sub>=0.55 | Braves win World Series in 7 games ), we have to get the result of P( Braves win World Series in 7 games | P<sub>B</sub>=0.55 ), P( P<sub>B</sub>=0.55 ), P( Braves win World Series in 7 games ).
+
+Then, based on the assumption that either P<sub>B</sub>=0.55 or P<sub>B</sub>=0.45.
+
+As a result, we could easily get P( P<sub>B</sub>=0.55 ) = 0.5;
+
+Then use `dnbinom()` to calculate P( Braves win World Series in 7 games ) and P( Braves win World Series in 7 games | P<sub>B</sub>=0.55 ):
+
+```{r}
+#P(Braves win World Series in 7 games) 
+dnbinom(3,4,0.45)*0.5+dnbinom(3,4,0.55)*0.5
+#P(Braves win World Series in 7 games|Pb=0.55) 
+dnbinom(3,4,0.55)
+```
+
+P(Braves win World Series in 7 games) = 0.1516092, and P(Braves win World Series in 7 games | P<sub>B</sub>=0.55) = 0.1667701.
+
+Finally, we can solve the problem using `Bayes Rules` and get the answer below:
+
+```{r}
+dnbinom(3,4,0.55)*0.5/(dnbinom(3,4,0.45)*0.5+dnbinom(3,4,0.55)*0.5)
+```
+
+So, the P(P<sub>B</sub>=0.55|Braves win World Series in 7 games) under above assumptions is 0.55.

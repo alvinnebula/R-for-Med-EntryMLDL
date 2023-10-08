@@ -1,0 +1,29 @@
+---
+title: "data_crud"
+author: "Alvin Chen"
+date: "2023-07-22"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+df = read.csv("/Users/alvin.nebula23/Desktop/Alvin's Folder/MS Courses/Healthcare/R-for-Med-EntryMLDL/R_data_analysis.csv")
+```
+
+```{r}
+df_subset <- df[, 1:8]
+df_subset
+```
+
+### ps: imputation by value == 0
+```{r}
+clean_df <- replace(df_subset, is.na(df_subset), 0) 
+```
+
+```{r}
+write.csv(clean_df, file = "/Users/alvin.nebula23/Desktop/Alvin's Folder/MS Courses/Healthcare/R-for-Med-EntryMLDL/Visualization_Statistical_Analysis_in_R/fdata.csv")
+```
