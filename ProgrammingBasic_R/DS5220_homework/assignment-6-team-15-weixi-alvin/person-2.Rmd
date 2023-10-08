@@ -1,0 +1,114 @@
+---
+title: "Person 2"
+author: "Yiwen Chen"
+output: github_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+library(readr)
+library(RVerbalExpressions)
+```
+
+
+## Lubridate
+
+The interview dataset is "survey data relating to households and agriculture in Tanzania and Mozambique. The survey data was collected through interviews conducted between November 2016 and June 2017 using forms downloaded to Android Smartphones." The variable `start` is the date and time of the start of the interview, and `end` is the date and time the interview ended.
+
+[Source](https://datacarpentry.org/socialsci-workshop/data/)
+
+```{r}
+interview <- read.csv("interview.csv")
+View(interview)
+```
+
+
+
+a) Parse `start` and `end` using lubridate functions into two new columns. Put the new columns at the front of the dataset, along with the `start` and `end` columns. 
+
+```{r}
+interview$new_start <- ymd_hms(interview$start)
+interview$new_end <- ymd_hms(interview$end)
+
+new_interview <- interview %>% 
+  select(new_start, new_end, start, end, everything())
+new_interview
+```
+
+b) Create a column in the dataset called `duration`. This column should be the length of the interview in **hours**. 
+
+Hint: See section 16.4.1 Durations in the R for Data Science text for information on durations in R. Functions `as.duration()` and `dhours()` will be helpful.
+
+```{r}
+test1 <- new_interview %>% 
+  mutate(duration = round(as.duration(new_end - new_start)/dhours(1),2)) %>% 
+  select(duration, everything())
+colnames(test1)[1]="duration (hours)"
+test1 
+```
+
+## Regular Expressions
+
+There are 2 questions using regular expressions below and each have two parts. Choose **1** of the questions to answer. You must complete both parts of whichever question you choose. 
+
+*Option 1*: Use str_subset to find all the words in `stringr::words` that are exactly 5 letters long.
+
+
+
+a) Using regular expressions
+
+
+
+b) Using rverbalexpressions
+
+
+
+*Option 2*: Evaluate the rule "i before e except after c". Are there any exceptions to this in the `stringr::words` data? An exception would be words where ie come after c, and words where ei occurs but it comes after a letter other than c.
+
+a) Using regular expressions
+
+```{r}
+stringr::words[str_detect(stringr::words, "cie")]
+stringr::words[str_detect(stringr::words,"[^c]ei")]
+```
+
+b) Using rverbal expressions
+
+```{r}
+x1 <- rx_find(value = "cie")
+stringr::words[str_detect(stringr::words,x1)]
+x2 <- rx_something_but(value = "c") %>% 
+  rx_find(value = "ei")
+stringr::words[str_detect(stringr::words,x2)]
+
+```
+
+
+
+## Application of Regular Expressions 
+
+The dataframe population contains the world's most populous cities. The `Location` column indicates the location of the city in the format "City, Country". `UN.2018.Population.Estimate` is the population of the city. `Population.per.Sq.km` indicates the population and area in $km^2$ in the format population-area for the "city proper." 
+
+[Source:](https://en.wikipedia.org/wiki/List_of_largest_cities#cite_note-UNpopulation-13)
+
+```{r, message = FALSE}
+(population <- read.csv("world_cities_population.csv"))
+```
+
+
+
+Read documentation on the `separate()` function from tidyr. This function allows you to separate a character column of a dataset into multiple columns using a regular expression to define the separation. Using the separate function and a regular expression, separate the `Location` column into `City` and `State`.
+
+```{r}
+population %>%  
+  separate(Location, c("City", "State"), sep = ",\\s(?=[^,]+$)")
+  #separate(Location, c("City", "State"), sep = ",(?=[^,]+$)")   
+  #separate(Location, c("City", "State"), sep = ",.(?=[^,]+$)") 
+  
+
+```
+
+

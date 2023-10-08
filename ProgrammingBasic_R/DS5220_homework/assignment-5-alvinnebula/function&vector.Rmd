@@ -1,0 +1,100 @@
+---
+title: "vectors"
+output: html_document
+---
+
+
+
+
+## Problem 1: Atomic Vectors and Vectorized Functions (20 pts)
+
+The `rivers` data is a numeric vector containing the lengths in miles of 141 rivers in North America. 
+
+```{r}
+data("rivers")
+```
+
+a) What is a vectorized function and 2) why are they so useful? 
+
+Vectorized function can operate on all elements of the whole vector at a time, and it doesn't need to loop through and act on each element one at a time.
+ 
+Because it makes code more concise, easy to read, and less error prone. The multiplication happened to each element of the vector.
+
+b) Write a function that will convert the river length from miles to km using the conversion 1 mile = 1.60934 km. The function should take in a vector and return a new vector. Note: Do not write a loop in this function. 
+
+```{r}
+rivers_in_km <- function(x){
+  k = 1.609344
+  rivers_km = rivers*k
+  rivers_km
+}
+rivers_in_km(rivers)
+```
+
+
+
+## Problem 2: More vectors (20 pts)
+
+a) Write a function that will take a vector and return the number of elements with values greater than 1,000. For example, if the input vector is c(108, 2060, 3442, 1000), the function would return 2. 
+
+In the body of your function, be sure to use vector operations. You don't need an if-else statement or a loop! (See section 20.3.1 of R for Data Science)
+
+```{r}
+greater1000 <- function(x){
+  sum(x>1000)
+}
+```
+
+
+b) Test your function with the `rivers` data to answer: How many rivers are longer than 1,000 miles?
+
+```{r}
+greater1000(rivers)
+```
+
+
+
+
+## Problem 3: Factors (10 pts)
+
+Factors are a type of vector known as an augmented vector. Create a factor called `river_level` that categorizes river lengths into the following levels:
+
+* short: < 500 miles long
+* medium: >= 500 miles and < 1000 miles
+* large: >= 1000 miles
+
+Hint: look up the cut() function. 
+
+```{r}
+river_level<-cut(rivers,breaks=c(0,500,1000,Inf),
+                 labels=c("short","medium","large"), 
+                 include.lowest = TRUE,right = FALSE)
+river_level
+```
+
+## Problem 4: Indexing with Lists (25 pts)
+
+Below is a list called `tweet_list`, which contains information about the top 20 most retweeted tweets on the social media platform Twitter along with some meta data about the list. To receive credit, you must use `tweet_list` in the expressions for parts a) and b) below. 
+
+```{r}
+# Number of retweets per tweet according to Twitter's rounding
+num_rts <- c(1140000, 1500000, 1030000, 1600000, 1300000, 1400000, 3400000, 2600000, 3100000, 1020000, 1160000, 1010000, 938600, 1800000, 1040000, 4400000, 3800000, 999900, 1030000, 912000)
+# Author of the tweet
+tweet_author <- c('MrBeastYT', 'Rubiu5', 'onedirection', 'BarackObama', 'BTS_twt', 'BTS_twt', 'carterjwm', 'Louis_Tomlinson', 'TheEllenShow', 'ArianaGrande', 'BTS_twt', 'RandallTime', 'DennyJA_WORLD', 'Rubiu5', 'PennStateIFC', 'yousuck2020', 'yousuck2020', 'RyanSesselman', 'BTS_twt', 'BTS_twt')
+# List
+tweet_list <- list(c("Top 20 Most Retweeted", "July 30, 2020"), num_rts, tweet_author)
+```
+
+a) Write an expression to find the sum of `num_rts` across all tweets.
+
+```{r}
+sum(tweet_list[[2]])
+```
+
+
+b) It has been discovered that twitter user MrBeastYT bought retweets, artificially inflating the number of retweets his tweet received. Subtract 500,000 purchased retweets from his retweet count (`num_rts`).
+
+```{r}
+tweet_list[[2]][1] <- tweet_list[[2]][1] - 500000
+tweet_list
+```

@@ -1,0 +1,56 @@
+---
+title: "Join"
+output: html_document
+---
+
+```{r}
+library(readr)
+library(dplyr)
+```
+
+## 1, Right join and left join table_2 to table_1. What's the difference between these two joined table? 
+
+```{r}
+df1 <- read.delim("table_1.csv")
+df2 <- read.delim("table_2.csv")
+
+df1 %>% 
+right_join(df2, by = "state")
+
+df1 %>% 
+left_join(df2, by = "state")
+```
+
+We can see the difference that the `right_join` keeps all the observation of `table_2`, and combines the same observations with the variable "population" and "ev". And then for the observations which `table_1` doesn't have, the "NA" would show right there in "population". The same, `left_join` keeps all the observation of `table_1`, and also combines the same observations with 2 variables. For the observations which `table_2` doesn't have, the "NA" would show in "ev".
+
+
+## 2, Use appropriate join to get the intersection table of table_1 and table_2.
+
+```{r}
+inner_join(df1,df2)
+```
+
+
+## 3, Use appropriate join to get the union table of table_1 and table_2.
+
+```{r}
+full_join(df1,df2)
+```
+
+
+## 4, Use appropriate join to keep the part of first table for which we have information in the second.
+
+```{r}
+df1 %>% 
+semi_join(df2, by= "state")
+```
+
+
+## 5, Use appropriate join to achieve opposite result from question 4.
+
+```{r}
+df1 %>% 
+anti_join(df2, by= "state")
+```
+
+

@@ -1,0 +1,176 @@
+---
+title: "joins"
+output: html_document
+---
+
+
+
+```{r, echo = FALSE}
+library(tidyverse)
+library(janitor)
+library(maps)
+library(nycflights13)
+```
+
+
+# nycflights13
+For this exercises, we will use four tibbles that are related to the "flight" table you used before.
+
+Check out the 4 tibbles before jumping to the question.
+
+"airlines", "airports", "planes", "weather"
+(How many points they have)
+(create issues for each questions. then github flow )
+
+# For the questions below, create an issue for each of them in the github and close the issue when you finished the problem.
+
+```{r}
+flights
+airlines 
+airports 
+planes 
+weather
+```
+
+
+## Question 1 :  Exercises for relations data (20 pts)
+
+1. Imagine you wanted to draw (approximately) the route each plane flies from its origin to its destination. What variables would you need? What tables would you need to combine?
+(You dont need to write code for this question.)
+
+Answers: To draw the route of each plane, I need "origin airport", "destination airport", "latitude", "longitude" and "altitude"(if 3D). I need to combine the tables "flights" and "airport". `origin` and `dest` are from "flights", and `faa`, `lat`, `lon`, `alt` are from "airports".
+
+2. We know that some days of the year are “special”, and fewer people than usual fly on them. How might you represent that data as a data frame? What would be the primary keys of that table? 
+
+Answers: Some special dates are festivals and I will list "New Years Day", "Independence Day", "Columbus Day", "Thanksgiving Day" and "Christmas Day" as a data frame. And use the "year","month" and "day" to join with other data frames. Btw, the "year","month" and "day" would be the primary keys of that table. And then, the data frame would be represented below.
+
+```{r}
+festivals <- data.frame(
+                        year = c(2013, 2013, 2013, 2013, 2013), 
+                        month = c(1, 7, 10, 11, 12),
+                        day = c(1, 4, 14, 29, 25),
+                        festival = c("New Year", "Independence Day", "Columbus Day", "Thanksgiving Day", "Christmas Day"))
+festivals
+```
+
+## Question 2: Exercises for Keys (10 pts)
+
+1. What are the primary keys of the 4 tibbles? Can you write code to verify that your assumptions are correct? 
+(Hint: One way to do that is to count() the primary keys and look for entries where n is greater than one.)
+
+Answers: 
+
+1.1 The primary key of "airlines" is`carrier`.
+
+```{r}
+airlines %>% 
+  count(carrier) %>% 
+  filter(n>1)
+``` 
+
+1.2 The primary key of "airports" is`faa`.
+
+```{r}
+airports %>% 
+  count(faa) %>% 
+  filter(n>1)
+```
+
+1.3 The primary key of "planes" is `tailnum`.
+
+```{r}
+planes %>% 
+  count(tailnum) %>% 
+  filter(n>1)
+```
+
+1.4 The primary key of "weather" are `origin` and `time_hour`.
+
+```{r}
+weather %>% 
+  count(origin, time_hour) %>% 
+  filter(n>1)
+```
+
+I verified those 1.1:1.3 and the results are 0, so I made correct assumptions. But in the last one, I firstly chose only `time_hour`, so after filtering, the result is not 0. And then I add `origin` into the code, so everything goes alright.
+
+## Question 3: Exercises for Joins (50 pts)
+
+1. Compute the average delay by destination, then join on the airports data frame so you can show the spatial distribution of delays. Here’s an easy way to draw a map of the United States:
+
+airports %>%
+  semi_join(flights, c("faa" = "dest")) %>%
+  ggplot(aes(lon, lat)) +
+    borders("state") +
+    geom_point() +
+    coord_quickmap()
+
+Think about how you add to this code to create your map. 
+
+You might want to use the size or colour of the points to display the average delay for each airport.
+
+Answers: 
+
+```{r}
+ave_delay_by_dest <- flights %>%
+  group_by(dest) %>% 
+  summarise(ave_delay = mean(arr_delay, na.rm = TRUE))%>% 
+  left_join(airports,by = c("dest"="faa"))
+ave_delay_by_dest
+ave_delay_by_dest %>% 
+  ggplot(aes(
+             y = lat,
+             x = lon,
+             color = ave_delay,
+             size = ave_delay)) +
+  labs(color = "Average Delay") +
+  geom_point(
+             size = 1,
+             alpha = 5 ) +
+  borders("state", 
+          size = 0.2, 
+          alpha = 0.5 ) +
+  coord_quickmap() +
+  coord_cartesian(xlim = c(-130,-65),
+                  ylim = c(20,55)) +
+  viridis::scale_color_viridis()
+
+```
+
+2. Filter flights to only show flights with planes that have flown at least 100 flights.
+(You will first need to find the planes that have flown at least 100 flights.)
+
+Report how many flight in total after filtering in your output. 
+
+Answers: 
+
+```{r}
+flights_more_than_100 <- flights %>% 
+  count(tailnum) %>% 
+  filter(n >= 100) %>% 
+  na.omit 
+flights_more_than_100
+flights%>% 
+  semi_join(flights_more_than_100, by = "tailnum") %>% 
+  nrow()
+```
+
+3. What does anti_join(flights, airports, by = c("dest" = "faa")) tell you? What does anti_join(airports, flights, by = c("faa" = "dest")) tell you?
+
+Answers: 
+
+```{r}
+flights
+airports 
+anti_join(flights, airports, by = c("dest" = "faa"))
+```
+
+It tells us the flights in "flights" table whose `dest` are not included in in "airports" table. It is equivalent to `filter` the `dest` which "airports" table doesn't have and shows every variable that "flights" table has.
+
+```{r}
+flights
+airports 
+anti_join(airports, flights, by = c("faa" = "dest")) 
+```
+
+It tells us the airports in "airports" table whose `faa` are not included in in "flights" table. It is equivalent to `filter` the `faa` which "flights" table doesn't have and shows every variable that "airports" table has.

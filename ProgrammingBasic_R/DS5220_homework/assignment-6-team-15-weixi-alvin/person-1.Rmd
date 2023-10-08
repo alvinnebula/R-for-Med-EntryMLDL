@@ -1,0 +1,123 @@
+---
+title: "person-1"
+author: 'Weixi Chen'
+output: github_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+library(readr)
+library(RVerbalExpressions)
+```
+
+
+## Lubridate 
+
+The biking dataset is from the Toronto Parking Authority and contains anonymized data on trips taken using their bicycle ride share. The data includes one row per trip and includes origin, destination, trip start, trip end, and user types. This particular dataset contains trips taken during Q4 of 2017. 
+
+[Source](https://www.kaggle.com/jackywang529/toronto-bikeshare-data)
+
+```{r}
+biking <- read.csv("Bikeshare_Ridership_Toronto_2017_Q4.csv")
+```
+
+
+
+a) Parse `trip_start_time` and `trip_end_time` using the appropriate lubridate function into two new columns. Put the new columns at the front of the dataset.
+
+```{r}
+biking <- cbind(mdy_hms(biking$trip_stop_time), biking)
+biking <- cbind(mdy_hms(biking$trip_start_time), biking)
+biking <- biking[-(4:5)]
+colnames(biking)[1:2] <- c("trip_start_time", "trip_end_time")
+biking
+```
+
+
+
+b) Create a column in biking called `trip_duration`. This column should be the length of the trip in **minutes**. 
+
+Hint: See section 16.4.1 Durations in the R for Data Science text for information on durations in R. Functions `as.duration()` and `dminutes()` will be helpful.
+
+```{r}
+trip_duration <- as.duration(biking$trip_end_time - biking$trip_start_time)/dminutes(1)
+trip_duration <- round(trip_duration, 3)
+biking <- cbind(biking, trip_duration)
+colnames(biking)[7] = "trip_duration(minutes)"
+biking
+```
+
+
+
+
+## Regular Expressions
+
+There are 2 questions using regular expressions below and each have two parts. Choose **1** of the questions to answer. You must complete both parts of whichever question you choose. 
+
+*Option 1*: Use `str_subset()` to find all of the words in `stringr::words` that begin with consonants.
+
+
+
+a) Using regular expressions
+
+```{r}
+library(stringr)
+consonants <- str_subset(stringr::words, "^[^aeiou]")
+```
+
+
+
+
+b) Using rverbalexpressions
+
+```{r}
+x <- rx() %>%
+     rx_start_of_line() %>%
+     rx_something_but(value = "aeiou")
+consonants1 <- stringr::words[grepl(x, stringr::words)]
+```
+
+
+
+
+*Option 2*: Use `str_detect` and a regular expression that would find telephone numbers written any of these ways:
+
+615-936-8320 
+615.936.8320
+
+
+
+a) Using regular expressions
+
+
+
+
+b) Using rverbalexpressions
+
+
+
+## Application of Regular Expressions 
+
+The dataframe population contains the world's most populous cities. The `Location` column indicates the location of the city in the format "City, Country". `UN.2018.Population.Estimate` is the population of the city. `Population.per.Sq.km` indicates the population and area in $km^2$ in the format population-area for the "city proper." 
+
+[Source:](https://en.wikipedia.org/wiki/List_of_largest_cities#cite_note-UNpopulation-13)
+
+
+
+```{r}
+population <- read.csv("world_cities_population.csv")
+```
+
+
+
+Read documentation on the `separate()` function from tidyr. This function allows you to separate a character column of a dataset into multiple columns using a regular expression to define the separation. Using the separate function and a regular expression, separate the `Population.per.Sq.km` column into `City.Proper.Population` and `City.Proper.Area`.
+
+```{r}
+population <- separate(population, "Population.per.Sq.km", into = c("City.Proper.Population", "City.Proper.Area"), sep = "/")
+```
+
+

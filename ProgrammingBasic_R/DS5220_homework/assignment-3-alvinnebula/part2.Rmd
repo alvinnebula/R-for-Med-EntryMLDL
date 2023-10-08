@@ -1,0 +1,80 @@
+---
+title: "assignment-3"
+output: github_document
+---
+```{r}
+library(tidyverse)
+library(readr) 
+library(ggplot2)
+library(dplyr)
+```
+
+```{r}
+data<- read.csv('train.csv')
+view(data)
+```
+
+
+# 1
+
+Find out the survive vs death ratio with respect to gender.And what's the age distribution for each gender.
+
+```{r}
+data %>% 
+  group_by(Sex) %>% 
+  summarise(sur_vs_dea_ratio= sum(Survived, na.rm = TRUE)/(n() - sum(Survived,na.rm = TRUE)))
+data %>% 
+  na.omit %>% 
+  count(Sex, Age)
+f_p<-data %>% 
+  na.omit %>% 
+  filter(Sex=="female") 
+  hist(f_p$Age, xlab = "age", main = "Age Distribution of Female")
+  ggplot(f_p, aes(x= Age)) + geom_histogram(bins = 30) + labs(title = "Age Distribution of Female") 
+m_p<-data %>% 
+  na.omit %>% 
+  filter(Sex=="male") 
+  hist(m_p$Age, xlab = "age", main = "Age Distribution of Male")
+  ggplot(m_p, aes(x= Age)) + geom_histogram(bins = 30) + labs(title = "Age Distribution of Male") 
+
+```
+
+
+# 2
+
+What is the mean age with respect to survived.
+
+```{r}
+data %>% 
+  filter(Survived == 1) %>% 
+  group_by(Survived) %>% 
+  summarise(mean_age = mean(Age,na.rm = TRUE))
+```
+
+
+# 3
+
+hint: count, sort, arrange.
+
+Find the 75% percentile of age with respect to survived column, then add a new column called age_bracket. We put major in the age_bracket if's the age is in the 75% percentile and minor for the rest 25% percentile. 
+
+```{r}
+data %>% 
+  na.omit %>%
+  filter(Survived == 1) %>% 
+  count(Survived, Age) %>% 
+  arrange(desc(n)) %>% 
+  mutate(cumsum_n = cumsum(`n`)) %>% 
+  mutate(age_bracket = ifelse(cumsum_n >= 0.75*sum(n),"minor","major"))
+
+data %>% 
+  na.omit %>%
+  filter(Survived == 0) %>% 
+  count(Survived, Age) %>% 
+  arrange(desc(n)) %>% 
+  mutate(cumsum_n = cumsum(`n`)) %>% 
+  mutate(age_bracket = ifelse(cumsum_n >= 0.75*sum(n),"minor","major"))
+
+```
+
+75% percentile of age in (Survived == 1) is 45 years old, and 75% percentile of age in (Survived == 0) is 38 years old.

@@ -1,0 +1,50 @@
+---
+title: "tidydata"
+output: html_document
+---
+
+```{r}
+library(tidyr)
+library(dplyr)
+```
+
+# Read Section 12: tidy data - R 4 Data Science before you jump in the questions.
+
+
+
+
+## Q1: What are the three interrelated rules that make a dataset tidy? (5 pts)
+
+1.Each variable must have its own column.
+2.Each observation must have its own row.
+3.Each value must have its own cell.
+
+## Q2: What are the two main advantages for ensuring your data is tidy? (5 pts)
+
+1.The first advantage is the uniformity. To ensure the data structure is consistent, it would be easier to learn the tools that work with the data.
+
+2.The second advantage is to make transforming tidy data feeling particularly natural. To place every variable in its own column, it allows R’s vectorised nature to shine. As learned in mutate and summary functions, most built-in R functions work with vectors of values. 
+
+## Q3: Is billboard data a tidy data? What is the problem of it? (10 pts)
+
+```{r}
+data("billboard")
+billboard
+```
+
+No, it isn't a tidy data. The Billboard dataset violates the rule that each observation must has its own row. The problem is the rank in each week is an observation (wk1 to wk75). To deal with this problem, we should store "wk1-wk76" in one column and the corresponding rank in another column.
+
+## Q4: Try to tidy billboard dataset. (10 pts)
+(Hint: pivot_longer())
+
+```{r}
+billboard %>% 
+  pivot_longer(
+    wk1:wk76,
+    names_to = "week",
+    values_to = "rank",
+    values_drop_na = TRUE) %>% 
+    mutate(
+    week = as.integer(gsub("wk","",week)))
+ 
+```

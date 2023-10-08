@@ -1,0 +1,256 @@
+---
+title: "transform-exercises"
+output: github_document
+---
+
+
+
+# Grammar of Data Manipulation
+
+These exercises cover concepts covered in Chapter 5 of R for Data Science (https://r4ds.had.co.nz/transform.html). Please answer all the questions by using tidyverse grammar. Documentation of the functions you will use can be found in the dplyr package documentation (https://dplyr.tidyverse.org/). Do feel free to post questions on Slack as well. 
+
+One additional helpful package will be janitor (https://github.com/sfirke/janitor), in particular the clean_names function. The data has columns names with spaces which is annoying to deal with--clean_names handles that. 
+
+For each problem, create an issue with the text describing the problem. Use GH Flow (create a branch for each problem in turn, close with a commit message, and create a pull request that you yourself merge).
+
+## Load Libraries
+
+```{r message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(dplyr)
+library(janitor)
+
+```
+
+## Import Data
+
+The data is from https://www.kaggle.com/abecklas/fifa-world-cup and the 2018 world cup data is added.
+
+```{r}
+worldcups <- read.csv("WorldCups.csv")
+worldcups_match <- read.csv("WorldCupMatches.csv")
+wc <- read.csv("WorldCups.csv")
+wc_match <- read.csv("WorldCupMatches.csv")
+```
+
+```{r}
+head(worldcups) 
+view(worldcups)
+head(worldcups_match)
+view(worldcups_match)
+```
+
+
+## Problem 1
+
+Find all countries that have won world cup and the number of World Cup titles won by each country in descending order. Find top three world cup winners. Return a dataframe with all countries, and note the answer in a comment below your output. 
+
+(Note: Germany FR and Germany are considered as the same winner!)
+
+```{r}
+wc$Winner <- str_replace_all(wc$Winner, "Germany FR", "Germany")
+wc_winners <- wc %>% 
+group_by(Winner) %>% 
+ summarize(Number = n()) %>% 
+arrange(desc(Number))
+head(wc_winners, 3)
+
+```
+Brazil has won the most world cups with 5 wins, followed by Germany & Italy with 4 each
+
+
+## Problem 2
+
+Which team hasn't won a World Cup on their home turf?
+
+(Note: Germany FR and Germany are considered as the same winner!)
+
+```{r}
+worldcups$Winner <- gsub('Germany FR', 'Germany', worldcups$Winner)
+win_on_truf <- worldcups %>% 
+ filter(Country == Winner )  
+ in_or_not <- !(worldcups$Winner%in%win_on_truf$Winner) 
+ not_on_truf_winner <- worldcups$Winner[in_or_not]
+unique(not_on_truf_winner) 
+
+```
+
+
+## Problem 3
+
+Which world cup has highest average goals per game? Please note the year, host and the average goal
+
+````{r}
+wc_goals <- wc %>%
+mutate(avg_goals = GoalsScored/MatchesPlayed) %>%
+arrange(desc(avg_goals)) %>% 
+select(Year, Country, avg_goals) %>% 
+head(1)
+wc_goals
+
+```
+
+## Problem 4
+
+Which world cup final has most scores? Please list the date and teams of this final.
+
+
+
+```{r}
+library(janitor)
+WCfinals = filter(worldcups_match, Stage == "Final")
+WCfinals = clean_names(WCfinals)
+WCfinals = mutate(WCfinals, total_score = home_team_goals + away_team_goals)
+arrange(WCfinals, desc(total_score)) %>% 
+filter(total_score == max(total_score))
+
+```
+
+The highest scores in a world cup finals was on June 29th 1958, where Brazil beat Sweden 5-2.
+
+## Problem 5
+
+What is the biggest goal difference in World Cup? Include the year, teams and goals of these matches. 
+
+Note: Only return the information about matches with biggest goal difference
+
+```{r}
+
+library(janitor)
+WorldCupMatches = clean_names(worldcups_match)
+WorldCupMatches = mutate(WorldCupMatches, goal_diff = abs(home_team_goals - away_team_goals))
+head(arrange(WorldCupMatches, desc(goal_diff))) %>% 
+ filter(goal_diff == max(goal_diff))
+
+```
+Three matches are tied for the largest goal differential at 9: 1954 Hungary (9) - Korea (0), 1974 Yugoslavia (9) - Zaire (0), and 1982 Hungary (10) - El Salvador (1).
+
+
+## Problem 6
+
+How many World Cup finals have been decided by penalty shootout? (Home and Away teams have the same number of goals.) Also please refer to WorldCups dataset to check the winner!
+
+```{r}
+
+Ps_in_finals <- worldcups_match %>% 
+  filter(Stage == "Final" & Home.Team.Goals == Away.Team.Goals)  
+Ps_in_finals %>% 
+  summarise(Number=n()) 
+
+Winner_by_Ps <- merge(worldcups, Ps_in_finals, by='Year')
+Winner_by_Ps %>% 
+  select(Winner)
+```
+
+
+
+## Problem 7
+
+Which World Cup did not have a final? Please list the year of that world cup.
+
+```{r}
+Wc_have_final <- worldcups_match %>% 
+  filter(Stage == 'Final')
+in_or_not <-worldcups_match$Year%in%Wc_have_final$Year
+no_final_year <- worldcups_match$Year[!in_or_not]
+unique(no_final_year)
+```
+
+
+
+## Problem 8
+
+Which world cup had the biggest goal difference on average and which worldcup had the least goal difference on average? Include the year, the difference on average and the variance of goal difference.
+
+```{r}
+wc_match <- as.data.frame(wc_match)
+wc_goal_diff <- wc_match %>% 
+  clean_names() %>% 
+  mutate(GD = abs(home_team_goals - away_team_goals)) %>% 
+  group_by(year) %>% 
+  summarize(mean_GD = mean(GD), var_GD = var(GD)) %>% 
+  select(year, mean_GD, var_GD)
+
+# Highest GD on average
+high_GD <- wc_goal_diff %>% 
+  arrange(desc(mean_GD)) %>%
+  head(1)
+
+# Lowest GD on average
+low_GD <- wc_goal_diff %>% 
+  arrange(mean_GD) %>% 
+  head(1)
+
+# printing high GD
+high_GD
+
+# printing low GD
+low_GD
+```
+
+The 1954 world cup has the highest goal differences per game with a mean of 3.0 goal difference and a variance of 5.36 goal difference.
+
+The 1990 world cup has the lowest goal differences per game with a mean of 1.21 goal difference and a variance of 1.11 goal difference.
+
+## Problem 9
+
+Choose your favorite team and tell me what do you find(ex: the average score, the rank, etc)
+
+```{r}
+#Because I am totally a F.Torres fan, I choose Spain as my favorite team.
+#Calculate the Average scores of Spain per game in World Cups
+
+#Since when we calculate the average goals and sessions, we do not think that the merged or split countries as the same. So we do not merge or split such countries, suah as Germany FR and German DR. (This is different from the championship succession system when calculating the championship above.)
+
+home_team <- worldcups_match %>% 
+  group_by(Home.Team.Name) %>% 
+  summarise(home_team_goals_by_team = sum(Home.Team.Goals))
+
+away_team <- worldcups_match %>% 
+  group_by(Away.Team.Name) %>% 
+  summarise(away_team_goals_by_team = sum(Away.Team.Goals))
+
+names(home_team)<-c("team_name","home_team_goals_by_team")
+names(away_team)<-c("team_name","away_team_goals_by_team")
+both_h_a_team <- merge(home_team, away_team, by='team_name')
+both_h_a_team[is.na(both_h_a_team)] <- 0
+
+all_team <- both_h_a_team %>% 
+  mutate(`team_total_goals` = both_h_a_team$home_team_goals_by_team + both_h_a_team$away_team_goals_by_team)
+
+
+home_session <- worldcups_match %>% 
+  group_by(Home.Team.Name) %>% 
+  summarise(home_team_sessions_by_team=n())
+away_session <- worldcups_match %>% 
+  group_by(Away.Team.Name) %>% 
+  summarise(away_team_sessions_by_team=n())
+
+names(home_session)<-c("team_name","home_team_sessions_by_team")
+names(away_session)<-c("team_name","away_team_sessions_by_team")
+both_h_a_sessions <- merge(home_session, away_session, by='team_name')
+both_h_a_sessions[is.na(both_h_a_sessions)]  <- 0
+
+all_sessions <- both_h_a_sessions %>% 
+  mutate(`team_total_sessions` = both_h_a_sessions$home_team_sessions_by_team + both_h_a_sessions$away_team_sessions_by_team)
+  
+both_team_sessions <- merge(all_team, all_sessions, by='team_name') %>% 
+  mutate(`team_average_goals` = team_total_goals/team_total_sessions) %>% 
+  mutate(Rank = min_rank(desc(`team_average_goals`))) %>%  
+  arrange(desc(`team_average_goals`)) %>% 
+  select(team_name, team_total_goals, team_total_sessions, team_average_goals, Rank)
+both_team_sessions 
+
+both_team_sessions %>% 
+  filter(team_name == 'Spain')
+
+```
+
+
+
+  
+  
+
+
+

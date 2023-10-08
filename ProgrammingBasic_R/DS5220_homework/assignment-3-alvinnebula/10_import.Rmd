@@ -1,0 +1,41 @@
+---
+title: "10_import"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(assertr)
+library(readr)
+```
+
+```{r}
+data(CO2)
+```
+
+### Code
+
+```{r}
+CO2 %>% 
+  chain_start %>% 
+  assert_rows(col_concat, is_uniq, Plant, Type, Treatment, conc, uptake) %>% 
+  assert(in_set("Quebec","Mississippi"), Type) %>% 
+  assert(in_set("chilled","nonchilled"), Treatment) %>%
+  insist(within_n_sds(2), conc) %>% 
+  insist(within_n_sds(2), uptake) %>% 
+  chain_end
+  
+```
+### Description
+
+`chain_start` and `chain_end` are functions at the beginning and end of a chain of assertr assertions to keep the code chunk run to the end no matter what errors happen inside this verify code chunk.
+
+`assert_rows(col_concat, is_uniq, Plant, Type, Treatment, conc, uptake)` is to justify whether each row is unique jointly between the "Plant", "Type", "Treatment", "conc", "uptake" columns; function `col_concat` is to make them jointly for function `is_uniq`.
+
+`assert(in_set("Quebec","Mississippi"), Type)` is to justify whether the "Type" contains "Quebec" and "Mississippi" only.
+
+`assert(in_set("chilled","nonchilled"), Treatment)`is to justify whether the "Treatment" contains "chilled" and "nonchilled" only.
+
+`insist(within_n_sds(2), conc)` is to justify whether every datum in the "conc" is inside the 2 standard deviations from its means.
+
+`insist(within_n_sds(2), uptake) `is to justify whether every datum in the "uptake" is inside the 2 standard deviations from its means.
