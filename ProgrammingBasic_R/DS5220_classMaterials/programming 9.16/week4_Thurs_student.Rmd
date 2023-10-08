@@ -1,0 +1,80 @@
+---
+title: "Transform-Assert"
+author: "John Yang"
+output: html_notebook
+---
+
+# First install the packages
+```{r}
+install.packages("tidyverse")
+install.packages("nycflights13")
+```
+# Now call the libraries
+
+````{r}
+library(nycflights13)
+library(tidyverse)
+library(tidyr)
+```
+
+# Relational Data: look at all these tables
+
+````{r}
+flights 
+airlines 
+airports 
+planes 
+weather 
+```
+# Finding a Key!
+
+# Let's try year, month, day, and flight
+
+````{r}
+flights %>% 
+  count(year, month, day, flight) %>% 
+  filter(n > 1)
+```
+
+# Let's try year, month, day, tailnum
+
+````{r}
+flights %>% 
+  count(year, month, day,tailnum) %>% 
+  filter(n > 1)
+```
+
+Individual challenge (5 mins): Add a surrogate key, index, to flights
+Hint-1: index should reflect the index of the observation like (1,2,...,336776)
+Hint-2: c(1:N) will return a vector of integers containing (1,2,...,N)
+
+````{r}
+xnxn <- flights %>% 
+      mutate(index=c(1:n()))
+
+
+         
+```
+Quick show of an example for "join".
+
+````{r}
+(flights2 <- flights %>% 
+  select(year:day, hour, origin, dest, tailnum, carrier))
+
+# Task: Add the full airline name to the flights2 data
+flights2 %>%
+  select(-origin, -dest) %>% 
+  left_join(airlines, by = "carrier")
+```
+
+Individual excercise: jointhe flights and weather tables using c("year", "month", "day", "hour", "origin")
+
+````{r}
+weather
+flights2 %>% 
+  left_join(weather, by = c("year", "month", "day", "hour", "origin"))
+```
+
+
+
+

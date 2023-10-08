@@ -1,0 +1,106 @@
+---
+title: "Transform-Assert"
+author: "John Yang"
+output: html_notebook
+---
+
+# First install the packages
+```{r}
+install.packages("tidyverse")
+install.packages("nycflights13")
+```
+# Now call the libraries
+
+````{r}
+library(nycflights13)
+library(tidyverse)
+library(tidyr)
+```
+
+# More excercises: Join and Transform!
+
+````{r}
+flights 
+airlines 
+airports 
+planes 
+weather
+```
+# Project: why flights delay?
+# Aim-1: Maybe it's the weather condition to blame!
+
+
+Task-1: Get the data tibble ready (5 mins)!
+instructions: 
+1. select the following variables "year:day", "hour", "origin", "dest", "tailnum", "carrier", "dep_delay", "arr_delay" from the tibble flights. The new tibble should be named "flights_sele"
+
+2. left_join with weather tibble by "year", "month", "day", "hour", "origin". The new tibble will be named "flights_weather"
+
+3. Check to make sure you have 20 variables in your final tibble.
+
+````{r}
+flights_sele <- flights %>% 
+  select("year", "month", "day", "hour", "origin", "dest", "tailnum", "carrier", "dep_delay", "arr_delay")  
+  
+flights_weather <- flights_sele %>%  
+  left_join(weather, by = c("year", "month", "day", "hour", "origin"))
+
+flights_weather
+
+```
+Task-2: Analyze how certain variables of weather may influence the departure delay? Let's start from humidity! (5 mins)
+instruction: 
+1. Based on flights_weather, select "dep_delay" and "humid", and define a new tibble yes_delay that contains all cases with dep_delay > 0. Name it as yes_delay.
+
+2. Based on flights_weather, select "dep_delay" and "humid", and define a new tibble yes_delay that contains all cases with dep_delay <= 0. Name it as no_delay.
+
+3. Computing the mean and standard deviation of the humid for yes_delay and no_delay, remember to use na.rm=TRUE when performing the computation. 
+
+4. Answer the question, does humidity infuences the departure delay?
+
+````{r}
+(yes_delay <- flights_weather %>% 
+  select("dep_delay", "humid") %>% 
+  mutate(delay_status = ifelse(dep_delay > 0, "Yes","No")) %>% 
+  filter(delay_status == "Yes"))
+  
+(no_delay <-flights_weather %>% 
+  select("dep_delay", "humid") %>% 
+  mutate(delay_status = ifelse(dep_delay >= 0, "Yes","No")) %>% 
+  filter(delay_status == "No"))
+
+yes_delay %>% 
+  summarise(mean_humid = mean(humid, na.rm = TRUE), sd = sd(humid, na.rm = TRUE))
+no_delay %>% 
+  summarise(mean_humid = mean(humid, na.rm = TRUE), sd = sd(humid, na.rm = TRUE))
+
+```
+
+Task-3: What about other factors, such as temperature and wind_speed? (5 mins)
+
+````{r}
+(yes_delay_temp_ws <- flights_weather %>% 
+  select(dep_delay, temp, wind_speed) %>% 
+  mutate(delay_status = ifelse(dep_delay > 0, "Yes","No")) %>% 
+  filter(delay_status == "Yes"))
+  
+(no_delay_temp_ws <-flights_weather %>% 
+  select(dep_delay, temp, wind_speed) %>% 
+  mutate(delay_status = ifelse(dep_delay >= 0, "Yes","No")) %>% 
+  filter(delay_status == "No"))
+
+yes_delay_temp_ws %>% 
+  summarise(mean_temp = mean(temp, na.rm = TRUE), sd_temp = sd(temp, na.rm = TRUE), mean_wind_speed = mean(wind_speed, na.rm = TRUE), sd_ws = sd(wind_speed, na.rm = TRUE))
+no_delay_temp_ws %>% 
+  summarise(mean_temp = mean(temp, na.rm = TRUE), sd_temp = sd(temp, na.rm = TRUE), mean_wind_speed = mean(wind_speed, na.rm = TRUE), sd_ws = sd(wind_speed, na.rm = TRUE))
+
+
+```
+```
+# Project-2: How airport location affects the delay?
+
+````{r}
+
+
+```
+

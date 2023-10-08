@@ -1,0 +1,143 @@
+---
+title: "Transform-Assert"
+author: "John Yang"
+output: html_notebook
+---
+
+# First install the packages
+```{r}
+install.packages("tidyverse")
+install.packages("nycflights13")
+install.packages("covid19.analytics")
+```
+
+````{r}
+library(covid19.analytics)
+library(tidyverse)
+```
+
+Group challenge*: Identify the top ten states that have the highest mean growth rate of COVID cases in August, 2021.  
+Hint-1: across() allows arithmetic operations for a range of variables. 
+Hint-2: rowMeans() will return the by-row average of values in a tibble
+
+````{r}
+CV_US %>% 
+   group_by(Province_State) %>% 
+   summarise((across(`2021-08-01`:`2021-08-31`, sum) - across(`2021-07-31`:`2021-08-30`, sum))/across(`2021-07-31`:`2021-08-30`, sum)) %>%
+   group_by(Province_State) %>%
+   summarise( Mean_Aug_2021 = rowMeans(across(`2021-08-01`:`2021-08-31`), na.rm = TRUE)) %>%
+   arrange(desc(Mean_Aug_2021))
+```
+
+````{r}
+install.packages("assertr")
+```
+
+````{r}
+library(assertr)
+library(magrittr)
+library(dplyr)
+```
+
+#Four functions assertr
+verify: takes a data frame and a logical operation expression. 
+
+# assert
+# assert_rows
+assert: takes a data frame and a "static" predicate.
+predicate functions: not_na, within_bounds, in_set, is_uniq
+
+# insist
+# insist_rows
+insist: takes a data frame and a "dynamic" predicate.
+predicate functions: within_n_sds, within_n_mads
+
+
+````{r}
+mtcars
+mtcars %>%
+  verify(has_all_names("mpg", "vs", "am", "wt")) %>%
+#  verify(has_all_names("mpg_error", "vs", "am", "wt")) %>%
+  verify(nrow(.) > 10) %>%
+# verify(nrow(.) > 10) %>%
+# verify(mpg < 20) %>% # think about comparison to filter()
+  verify(mpg > 0) 
+```
+
+Description of variables:
+
+[1]	mpg	Miles/(US) gallon
+[2]	cyl	Number of cylinders
+[3]	disp	Displacement (cu.in.)
+[4]	hp	Gross horsepower
+[5]	drat	Rear axle ratio
+[6]	wt	Weight (1000 lbs)
+[7]	qsec	1/4 mile time
+[8]	vs	Engine (0 = V-shaped, 1 = straight)
+[9]	am	Transmission (0 = automatic, 1 = manual)
+[10]	gear	Number of forward gears
+[11]	carb	Number of carburetors
+
+Individual excercise (5 mins): 
+1. verify if the engine is either V-shaped or straight?
+Hint: the variable, vs,  equals to 0 or 1.
+2. also try verifying if the number of forward gears is between 3 and 5.
+
+````{r}
+
+mtcars %>%
+  verify(vs == 0|vs==1) %>% 
+  verify(gear>=3 & gear<=5)
+ 
+
+```
+
+Now let's take a look at assert
+
+````{r}
+mtcars %>%
+  assert(in_set(0,1), am, vs) %>%
+  #assert(in_set(0,1), cyl) %>% 
+  #assert(within_bounds(9,10), gear, carb)
+  assert(within_bounds(0,10), gear, carb)
+```
+
+Individual excercise (2 mins): 
+assert to see if each car has a unique 1/4 mile time
+Hint: use is_uniq()
+
+````{r}
+mtcars %>%
+  assert(is_uniq, qsec) 
+```
+
+Now let's take a look at insist
+
+````{r}
+mtcars %>%
+  insist(within_n_sds(3), mpg) %>%
+  insist(within_n_mads(3), mpg)
+```
+
+Also - we have row operations!
+
+````{r}
+mtcars %>%
+  #assert_rows(col_concat, is_uniq, vs, am) %>%
+  assert_rows(col_concat, is_uniq, mpg, am, wt)
+```
+
+Finally, you can use chain_start and chain_end to examine all conditions at once. 
+
+````{r}
+mtcars %>%
+       chain_start %>%
+       verify(nrow(.) >= 10) %>%
+       verify(mpg < 32) %>%
+       assert(in_set(1, 2, 3, 4), carb) %>%
+       assert_rows(col_concat, is_uniq, vs, am) %>%
+       chain_end
+```
+
+
+

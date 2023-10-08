@@ -1,0 +1,259 @@
+---
+title: "Transform-Assert"
+author: "John Yang"
+output: html_notebook
+---
+
+# First install the packages
+```{r}
+install.packages("tidyverse")
+install.packages("nycflights13")
+```
+# Now call the libraries
+
+````{r}
+library(nycflights13)
+library(tidyverse)
+library(tidyr)
+```
+
+
+# Lists
+
+````{r}
+
+# Remember if you want to define a vector of c(1,2,3)
+
+(x <- c(1,2,3))
+
+```
+````{r}
+
+# Remember if you want to define a vector of c(1,2,3)
+
+(x <- list(1,2,3))
+
+#x*10
+```
+
+````{r}
+# Now let's see the power of list!
+y <- list("a",1L,1.5, TRUE)
+str(y)
+```
+````{r}
+z <- list(list(1, 2), list(3, 4))
+str(z)
+```
+
+Subseting elements in a list
+
+````{r}
+x <- list(1:3, "a string", pi, list(-1, -5))
+str(x)
+```
+
+How to get the first element from the list?
+
+First way:
+````{r}
+x[1]
+```
+
+Second way:
+````{r}
+x[[1]]
+```
+
+Third way:
+````{r}
+x <- list(a = 1:3, b = "a string", c = pi, d = list(-1, -5))
+
+x$a
+#x$1
+```
+
+# Function: Why we need that?
+
+1. You can give a function a name that makes your code easier to understand
+
+2. As requirements change, you only need to update the code in one place
+
+3. You eliminate the chance of making incidental mistakes when you copy and paste the code.
+
+
+````{r}
+df <- list(
+  a = 1:10,
+  b = 11:20,
+  c = 21:30,
+  d = 31:40
+)
+
+df
+```
+Now we want to scale the first atomic vector of the list df$a by 10 times!
+
+````{r}
+
+(df$a <- df$a * 10)
+
+```
+
+Now we want to do the same thing in df$b df$c and df$d
+
+But do you see what's wrong with the code?
+
+````{r}
+
+(df$b <- df$b * 10)
+(df$c <- df$c * 10)
+(df$d <- df$d * 10)
+
+```
+````{r}
+df
+```
+It's time for a function!
+#      function_name <- function (function_argument) {
+#              function_body
+#                                       }
+
+Three important elements:
+# a name
+# argument
+# function body
+
+Here is a function we just defined:
+````{r}
+rescale_10 <- function(x) {
+  x*10
+}
+
+test <- c(1,2,3)
+
+rescale_10(test)
+```
+
+Now, with the function in hand, we are ready to apply the function to simplify the code structure!
+````{r}
+rescale_10(df$a)
+rescale_10(df$b)
+rescale_10(df$c)
+rescale_10(df$d)
+```
+
+Individual excercise: Define a function named "rescale_01" to operate on a numeric type atomic vector. The function should scale every value in the vector by a factor of 0.1
+
+````{r}
+df <- list(
+  a = 1:10,
+  b = 11:20,
+  c = 21:30,
+  d = 31:40
+)
+
+
+# Your function goes here.
+
+
+
+df
+```
+Some special aspects of function arguments in R
+
+Let's write a function to compute x to the power of y. 
+
+x^y 
+
+````{r}
+
+2^3
+
+```
+
+````{r}
+pow <- function(x, y) {
+result <- x^y
+print(paste(x," raised to the power of ", y, " is ", result))
+}
+
+pow(2,3)
+pow(x = 2, y = 3)
+```
+
+Now question to you (a poll!): 8 or 9?
+
+We know that 2^3 = 8 and 3^2 = 9
+
+First one: 8 or 9?
+````{r}
+pow(3, 2)
+```
+
+Second one: 8 or 9?
+````{r}
+pow(y = 3, x = 2)
+```
+
+Third one: 8 or 9?
+````{r}
+pow(3, x = 2)
+```
+
+Key: R doesn't care about the order of the arguments! It cares about the name of the variable! 
+
+# Define the function to make it readable.
+
+````{r}
+# Too short
+f()
+
+# Not a verb, or descriptive
+my_awesome_function()
+
+# Long, but clear
+classmate_names()
+collapse_years()
+```
+
+# Functional programming: applying and choosing functions
+
+Conditions that make your function smarter!
+
+if...else structure
+
+````{r}
+x <- 1
+# x <- 2
+if ( x == 1) {
+  print("Yes!")
+} else {
+  print("No!")
+}
+
+```
+
+if...elif...else structure
+
+````{r}
+x <- 1
+# x <- 2
+# x <- 3
+if ( x == 1) {
+  print("Yes!")
+} else if (x == 2) {
+  print("Maybe!")
+} else {
+  print("No!")
+}
+
+```
+
+Individual excercise: Write a function named "judgement" to take three numeric arguments, a, b, and c. Determine whether a+b == c? Print "yes" or "no", based on the judgement result. 
+
+````{r}
+# Your function goes here.
+
+
+```

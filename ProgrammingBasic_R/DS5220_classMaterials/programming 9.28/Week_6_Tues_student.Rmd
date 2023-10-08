@@ -1,0 +1,227 @@
+---
+title: "Transform-Assert"
+author: "John Yang"
+output: html_notebook
+---
+
+# First install the packages
+```{r}
+install.packages("tidyverse")
+install.packages("nycflights13")
+```
+# Now call the libraries
+
+````{r}
+library(nycflights13)
+library(tidyverse)
+library(tidyr)
+```
+
+Key properties of a vector
+
+````{r}
+# Use typeof() to determine the type of a vector
+x <- "letter"
+
+typeof(x)
+length(x)
+
+y <- c(1:10)
+
+typeof(y)
+length(y)
+
+```
+
+A quick individual exercise: determine the type and length of a built-in variable "letters"
+
+````{r}
+letters # Letter is a built-in variable
+typeof(letters)
+length(letters)
+
+
+```
+
+#Important Types of Atomic Vector
+
+1. Logical type
+
+````{r}
+# Simple definition
+(x <- c(TRUE, FALSE, TRUE))
+typeof(x)
+
+# Logical operation
+
+(y <- c(1:10) %% 3 == 0) # Notice that you can do mathematical operations directly using a vector
+
+typeof(y)
+
+```
+
+A quick individual exercise: for a vector c(1:10), examine each value to see whether the value is an even number (TRUE) of not (FLASE), return a logical vector that informs the result. 
+
+````{r}
+(x <- c(1:10) %% 2 == 0)
+
+```
+
+1. Numeric type
+
+````{r}
+(x <- c(1))
+
+typeof(x)
+
+# See the power of "L"
+(y <- c(1L,2L,3L))
+
+typeof(y)
+
+```
+
+A quick individual exercise: define x to be sqrt(2)^2; define y to be an integer 2.
+Compare to see if they precisely equal to each other? Do you understand why? 
+
+````{r}
+
+x <- sqrt(2)^2
+
+y <- 2L
+
+x == y
+
+x - y
+```
+
+
+3. Character (most complex type of atomic vector because string can contain an arbitary amount of data)
+
+````{r}
+
+x <- "My name is John"
+
+typeof(x)
+length(x)
+
+y <- c("My","name","is","John")
+
+typeof(y)
+length(y)
+```
+
+#Operation of Atomic Vectors
+
+Converting vectors
+as.logical()
+as.integer()
+as.double()
+as.character()
+
+````{r}
+(x <- c(0,1,2))
+
+typeof(x)
+
+(y <- as.integer(x))
+
+typeof(y)
+
+(z <- as.character(x))
+
+typeof(z)
+
+(a <- as.logical(x))
+
+typeof(a)
+
+```
+
+Individual exercise: for a vector c("x","y","z"), convert is to integer, double, and logical types and see what you get. 
+
+````{r}
+(x <- c("x","y","z"))
+
+typeof(x)
+(y <- as.integer(x))
+typeof(y)
+(z <- as.double(x))
+typeof(z)
+(a <- as.logical(x))
+typeof(a)
+
+```
+
+Testing vectors
+is.logical()
+is.integer()
+is.double()
+is.character()
+
+````{r}
+(x <- c(0,1,2))
+
+is.integer(x)
+
+is.double(x)
+
+is.character(x)
+
+is.logical(x)
+
+```
+
+Naming vectors
+set_names
+````{r}
+
+(x <- c(Mon = 65, Tues = 62, Wed = 70))
+
+(y <- set_names(c(65,62,70), c("Mon", "Tues", "Wed")))
+```
+
+Individual exercise: check the type of y. Can you see what's the benefit of defining a name to a variable?
+
+````{r}
+
+(y <- set_names(c(65,62,70), c("Mon", "Tues", "Wed")))
+typeof(y)
+
+y["Mon"]
+y[2]
+y[1]
+
+```
+Subsetting vectors
+Using square bracket []
+
+````{r}
+x <- c("one", "two", "three", "four", "five")
+x[c(3, 4, 5)]
+x[c(-1,-2)]
+#x[c(1,2,-3)]
+
+(y <- set_names(c(65,62,70), c("Mon", "Tues", "Wed")))
+y[c("Mon", "Tues")]
+
+```
+Individual exercise: see the power of logical operator in subset! 
+
+The vector, x, is a random set of integers within 100. Can you find all the even values in the vector x? 
+
+Hint-1: numeric vectors can undergo mathematical operations.
+Hint-2: %% operator can help you get the remainder.
+
+````{r}
+x <- c(sample(100))
+x[x %% 2 == 0]
+
+```
+
+
+
+
+
+
+

@@ -1,0 +1,117 @@
+---
+title: "Transform-Assert"
+author: "John Yang"
+output: html_notebook
+---
+
+# First install the packages
+```{r}
+install.packages("tidyverse")
+install.packages("nycflights13")
+```
+# Now call the libraries
+
+````{r}
+library(nycflights13)
+library(tidyverse)
+library(tidyr)
+```
+# Relational Data: look at all these tables
+
+````{r}
+flights 
+airlines 
+airports 
+planes 
+weather 
+```
+Individual excercise from last time: Join the flights and weather tables using c("year", "month", "day", "hour", "origin")
+
+````{r}
+
+flights2 <- flights %>% 
+  select(year:day, hour, origin, dest, tailnum, carrier)
+
+flights2
+
+weather
+
+weather %>%
+count(year, month, day, hour, origin) %>% 
+  filter(n > 1) 
+
+flights2 %>% 
+  left_join(weather, by = c("year", "month", "day", "hour", "origin"))
+
+# Question for you: why the total number of observations remian the same after left_join?
+
+```
+
+
+What you have already known: You can define a group of variables as a key
+
+````{r}
+flights2
+weather
+
+flights2 %>% 
+  left_join(weather, by = c("year", "month", "day", "hour", "origin"))
+```
+
+A named character vector: by = c("a" = "b"). This will match variable a in table x to variable b in table y.
+
+````{r}
+flights2
+airports
+
+flights2 %>% 
+  left_join(airports, c("dest" = "faa"))
+
+flights2 %>% 
+  left_join(airports, c("origin" = "faa"))
+
+```
+
+# Filter joins: semi-join and anti-join
+
+````{r}
+top_dest <- flights %>%
+  count(dest, sort = TRUE) %>%
+  head(10)
+
+top_dest
+
+flights 
+
+flights %>% 
+  semi_join(top_dest)
+
+flights %>% 
+  anti_join(top_dest)
+```
+
+Individual excercise: 
+
+Using a group of variables as a key (year, month, day, hour, origin), find the observations in flights2 tibble where no weather information is available.
+
+````{r}
+
+flights2 <- flights %>% 
+  select(year:day, hour, origin, dest, tailnum, carrier)
+
+# Your code goes here.
+flights2
+
+weather
+
+all_weather <- weather %>%
+count(year, month, day, hour, origin) 
+
+
+flights2 %>% 
+  anti_join(all_weather)
+ 
+
+
+```
+

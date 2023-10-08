@@ -1,0 +1,150 @@
+---
+title: "Transform"
+author: "John Yang"
+output: html_notebook
+---
+
+# First install the packages
+```{r}
+install.packages("tidyverse")
+install.packages("nycflights13")
+```
+
+# Now call the libraries
+
+````{r}
+library(nycflights13)
+library(tidyverse)
+```
+
+# Now define a tibble. Pay attention to the differnt types of variables [integers<int>, doubles<dbl>, characters<chr>, data-times<dttm>, logical<lgl>, factors<fctr>, dates<date>]. 
+
+````{r}
+flights <- flights
+flights 
+# State the obvious~
+# How many variables do we have in the tibble?
+# How many observations do we have in the tibble?
+```
+
+# Let's try out filter() first
+
+For the flights that got delayed, were they more likely to make up or get further delayed?
+Hint-1: how to quantitatively define "delay"?
+Hint-2: how to define "make up" and "further delayed"?
+
+````{r}
+( further_delay_0 = filter(flights, dep_delay > 0 & arr_delay-dep_delay > 0))
+( make_up_0 = filter(flights, dep_delay > 0 & arr_delay-dep_delay < 0))
+```
+
+
+What are potential concerns in this analysis?
+
+
+For example, what about making up or getting further delayed by 30 mins?
+
+````{r}
+( further_delay_30 = filter(flights, dep_delay > 0 & arr_delay-dep_delay >= 30))
+( make_up_30 = filter(flights, dep_delay > 0 & arr_delay-dep_delay <= -30))
+```
+
+Another example, what about making up or getting further delayed by 50 mins?
+
+````{r}
+( further_delay_50 = filter(flights, dep_delay >= 0 & arr_delay-dep_delay >= 50))
+( make_up_50 = filter(flights, dep_delay >= 0 & arr_delay-dep_delay <= -50))
+```
+
+# Now, let's work on arrange()
+
+````{r}
+# Sort flights to find the shortest flight.
+arrange(flights, air_time)
+# Sort flights to find the most delayed departure flight.
+arrange(flights, desc(dep_delay))
+```
+
+Individual exercise (3 mins) 
+
+Sort flights to find the fastest (highest speed) flight in July.
+hint: 1. Speed is not a variable in the existing data table.
+hint: 2. Speed is defined as "distance" over "air_time". Both variables can be found in flights.
+
+````{r}
+july1 = filter(flights, month == 7)
+arrange(july1, desc(distance/air_time) )
+```
+
+# Find the variables you are interested in using select(). Note: Be aware of the number of variables.
+
+````{r}
+flights
+# select three variables year, month, and day
+select(flights, year, month, day)
+# you can use "-" to eliminate variables
+select(flights, -(year:dep_time))
+# helper functions: contains, starts_with, ends_with
+select(flights, contains("dep"))
+    # select(flights, starts_with("dep"))
+    # select(flights, ends_with("dep"))
+# define a vector first and then use helper function any_of()
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+select(flights, any_of(vars))
+```
+
+# Add new variables with mutate(). Add new variables that are derived from existing variables. 
+
+````{r}
+# Here we want to create a new table. 
+# The new table, flights_speed, will contain multiple variables from flights.
+# The new table will also add one more variable "speed" that is derived from distance and air_time
+flights_speed <- select(flights, year:day, distance, air_time)
+mutate(flights_speed, speed_mile_per_mins  = distance / air_time, speed_mile_per_hours = distance / air_time * 60)
+```
+
+Group exercise (7 mins):
+
+1. Create a new tibble, flights_ind, to include year, month, day, and the variables that end with "delay".
+2. Find all flights that departed in summer, and save your results to a new tibble, flights_ind_summer
+3. Add a new variable to flights_ind_summer, time_gain, that represents the time gain during the flight.
+4. Arrange the table based on the time_gain and put the 
+
+````{r}
+(flights_ind <-select(flights, year, month, day, ends_with("delay")))
+(flights_ind_summer <- filter(flights_ind, month == 7 | month == 8 | month == 9 ))
+(flights_ind_summer <- mutate(flights_ind_summer, time_gain = dep_delay - arr_delay))
+
+```
+
+# Finally, Group_by and summarise()
+
+````{r}
+# Get statistical information using summarise() 
+summarise(flights, delay = mean(dep_delay, na.rm = TRUE))
+```
+````{r}
+# Get statistical information for a certain group by combining summarise() with group_by()
+by_day = group_by(flights, year, month)
+summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
+```
+
+````{r}
+# Another example
+by_origin = group_by(flights, origin)
+summarise(by_origin, delay = mean(dep_delay, na.rm = TRUE))
+```
+
+Question: how many groups do you expect to see in the following command? 12+3 =15 or 12*3 = 36
+
+````{r}
+by_origin_month = group_by(flights, year, month, origin)
+summarise(by_origin_month, delay = mean(dep_delay, na.rm = TRUE))
+```
+
+Group Challenge: Explore the relationship between the distance and average delay for each location in July？
+Hint: Think about the order of verbs (summarise, group_by, filter, etc.) you will use to transform data.
+
+````{r}
+
+```

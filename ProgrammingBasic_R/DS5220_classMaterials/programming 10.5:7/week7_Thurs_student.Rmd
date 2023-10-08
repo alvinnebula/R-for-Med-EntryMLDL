@@ -1,0 +1,378 @@
+---
+title: "Transform-Assert"
+author: "John Yang"
+output: html_notebook
+---
+
+# First install the packages
+```{r}
+install.packages("tidyverse")
+install.packages("nycflights13")
+```
+# Now call the libraries
+
+````{r}
+library(nycflights13)
+library(tidyverse)
+library(tidyr)
+```
+
+# Functional programming: Conditional Execution
+
+Four variations:
+
+1. if () {}
+
+Example-1: Just "if"
+
+````{r}
+x <- "True"
+
+if ( x == "True") {
+  print("Yes!")
+} 
+
+```
+
+Example-2: Multiple "if" statements
+
+````{r}
+x <- "True"
+
+if ( x == "True") {
+  print("Yes!")
+} 
+if ( x != 0) {
+  print("Yes!")
+}
+if ( is.character(x)) {
+  print("No!")
+}
+```
+
+2. If () {} else if () {}
+
+````{r}
+x <- "True"
+# x <- "Maybe"
+# x <- "False"
+
+if ( x == "True") {
+  print("Yes!")
+} else if ( x != "False"){
+  print("Not false!")
+}
+
+```
+
+3. if () {} else {}
+
+````{r}
+x <- "True"
+
+if ( x == "True") {
+  print("Yes!")
+} else {
+  print("No!")
+}
+
+```
+
+4. If () {} else if () {} else {}
+
+````{r}
+x <- "True"
+
+if ( x == "True") {
+  print("Yes!")
+} else if (x == "Maybe") {
+  print("Maybe!")
+} else {
+  print("No!")
+}
+
+```
+
+Individual excercise: Write a function named "judgement" to take three numeric arguments, a, b, and c. Determine whether a+b == c? Print "Yes!" or "No!", based on the judgement result. 
+
+Hint: template of function definition: 
+      function_name <- function (function_argument) {
+              function_body
+                                       }
+
+````{r}
+judgement <- function(a, b, c) {
+if ( a + b == c) {
+  print("Yes!")
+} else {
+  print("No!")
+}
+}
+
+judgement(1,2,3)
+```
+
+# Iteration
+
+Motivation
+
+````{r}
+df <- list(
+  a = 1:10,
+  b = 11:20,
+  c = 21:30,
+  d = 31:40
+)
+
+df
+```
+
+We defined a function to scale atomic vectors:
+
+````{r}
+rescale_10 <- function(x) {
+  x*10
+}
+
+```
+
+Simplest example:
+
+````{r}
+nums = c()
+for ( i in 1:3) {
+  nums[i] <- i
+}
+nums
+```
+
+Looping a list:
+
+````{r}
+fruits <-list("apple","banana","cherry")
+
+for (x in fruits) {
+  print(x)
+  }
+```
+
+Looping a list:
+
+````{r}
+fruits <-list("apple","banana","cherry")
+
+for (x in seq_along(fruits)) {
+  print(fruits[x])
+  }
+```
+
+Individual exercise: examine the data types in flights!
+
+Use For Loop to print the type of each column in nycflights13::flights
+
+Hints: 
+1. "i in flights" will iterate ever column in flights 
+2. typeof() function can return the type of a variable
+
+````{r}
+#flights
+
+for (i in flights) {
+  print(typeof(i))
+  }
+
+```
+
+Integrating condition and iteration to create more powerful code!
+
+rescale_10: we will prepare a new rescale_10 function that can take either a numeric type or a list type, rescale the values stored inside by 10, and print the outcome.
+
+````{r}
+df <- list(
+  a = 1:10,
+  b = 11:20,
+  c = 21:30,
+  d = 31:40
+)
+
+rescale_10 <- function(x) {
+  if (is.numeric(x)) {
+    x <- x*10
+  } else if (is.list(x)) {
+    for ( i in seq_along(x)) {
+      x[[i]] <- x[[i]]*10
+      } 
+    } else {
+      print("Something is wrong. The variable can not be scaled!")
+    }
+  
+  print(x)
+}
+# case-1: just an atomic vector
+rescale_10(c(1,2,3))
+# case-2: give the function a list
+rescale_10(df)
+# case-3: give the function a character
+rescale_10("wonderful")
+```
+
+# Return value
+
+````{r}
+rescale_10 <- function(x) {
+  for ( i in seq_along(x)) {
+      x[[i]] = x[[i]]*10
+  }
+}
+
+rescale_10_return <- function(x) {
+  for ( i in seq_along(x)) {
+      x[[i]] = x[[i]]*10
+      return(x)
+  }
+}
+
+#A <- rescale_10(list(1,2,3))
+#print(A)
+
+B <- rescale_10_return(list(1,2,3))
+print(B)
+```
+
+Individual exercise: revise the following code to return the list after rescaling. 
+
+````{r}
+df <- list(
+  a = 1:10,
+  b = 11:20,
+  c = 21:30,
+  d = 31:40
+)
+
+rescale_10 <- function(x) {
+  if (is.numeric(x)) {
+    x = x*10
+  } else if (is.list(x)) {
+    for ( i in seq_along(x)) {
+      x[[i]] = x[[i]]*10
+      } 
+    } else {
+      print("Something is wrong. The variable can not be scaled!")
+    }
+  
+}
+
+C = rescale_10(df)
+print(C)
+```
+
+# Stringr
+
+````{r}
+library(stringr)
+```
+
+````{r}
+# Define a string
+test_s <- c("One ", "Two ", "Three ", "This is a string")
+```
+
+````{r}
+# Check the number of elements in a vector, not specific to string operations.
+length(test_s)
+```
+
+````{r}
+# Count the number of "single characters" in each element
+str_length(test_s) 
+```
+
+````{r}
+# sort the string values 
+str_sort(test_s) 
+
+# change all characters to lower case
+str_to_lower(test_s) 
+
+# change all characters to upper case
+str_to_upper(test_s) 
+```
+
+````{r}
+# Combine strings
+str_c(test_s[1], test_s[2], sep ="") 
+
+# Split a string based on a certain pattern
+str_split(test_s[4], pattern = " ") 
+```
+
+````{r}
+# See the issue with whitespace!
+str_split(test_s[1], pattern = " ") 
+
+str_trim(test_s[1]) %>% str_split(., pattern = " ") 
+```
+
+Individual exercise: For the string S_1, remove whitespace in each element, and change every single character to upper case. 
+
+````{r}
+
+S_1 <- c("john ", "yilin", " Eric", "LUcy ") 
+  str_trim(S_1) %>% 
+  str_to_upper(.)
+
+```
+
+# Pattern: regular expression
+
+First, basic match
+
+````{r}
+x <- c("apple", "banana", "pear")
+
+str_view(x, "an")  #only the first
+str_view_all(x, "an")  #diff:show all
+```
+
+Second, Anchors
+
+````{r}
+x <- c("apple", "banana", "pear")
+
+
+str_view(x, "a")
+str_view(x, "^a")
+str_view(x, "a$")
+```
+Third, Character classes
+
+````{r}
+x <- c("apple", "banana", "pear")
+
+str_view(x, "[a-c]")
+str_view(x, "[a-z]")
+
+x <- c("apple", "ban1ana", "pear")
+
+str_view(x, "[p1-9]")
+str_view(x, "^[p1-9]")
+```
+Last, Repetition
+
+````{r}
+x <- c("apple", "banana", "pear","apabc","aapabc")
+
+str_view(x, "ap")
+str_view(x, "a?p")
+str_view(x, "a+p")
+str_view(x, "ap?")
+str_view(x, "ap*")
+str_view(x, "a*p")
+```
+Individual exercise: find the string elements that contain numeric characters in it.
+
+````{r}
+x <- c("apple", "banana", "app1e", "pea0r")
+
+str_view(x, "[0-9]")
+```

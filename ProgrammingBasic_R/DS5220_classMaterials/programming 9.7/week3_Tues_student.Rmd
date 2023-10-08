@@ -1,0 +1,150 @@
+---
+title: "Transform-Assert"
+author: "John Yang"
+output: html_notebook
+---
+
+# First install the packages
+```{r}
+install.packages("tidyverse")
+install.packages("nycflights13")
+```
+
+# Now call the libraries
+
+````{r}
+library(nycflights13)
+library(tidyverse)
+```
+
+Using pipe (%>%) to simplify your code:
+
+Now, suppose we are trying to generate a new tibble that contains all flights in July and adds a new column, reader = "John".   
+
+````{r}
+flights 
+(flights_July = filter(flights, month == 7))
+(flights_July_ZY = mutate(flights_July, reader="John"))
+```
+
+Let's use Pipe to simplify the code with three steps:
+1. remove the name of each newly generated tibbles
+2. remove the first argument of each operation verbs
+3. add "%>%"
+
+````{r}
+flights %>% 
+  filter(month == 7) %>%
+  mutate(reader="John")
+```
+
+Group Challenge: Investigate the relationship between the distance and average delay for each location in July？
+Hint: Use summarise, group_by, filter, arrange
+
+````{r}
+flights %>% 
+  filter(month == 7) %>% 
+  group_by(dest) %>% 
+  summarise(dist = mean(distance, na.rm= TRUE), delay = mean(arr_delay, na.rm = TRUE)) %>% 
+  arrange(desc(delay))
+  
+```
+
+# Apply your skills to address covid19 statistics
+
+````{r}
+install.packages("covid19.analytics")
+```
+
+````{r}
+library(covid19.analytics)
+library(tidyverse)
+```
+
+````{r}
+# obtain time series data for "confirmed" cases
+(covid19.confirmed.cases <- covid19.data("ts-confirmed"))
+```
+
+````{r}
+# First check the number of variables. A function that helps us explore the number of days/weeks between two dates. 
+difftime("2021-9-6", "2020-1-22", units = "days")
+```
+
+Individual excercise (3 mins)
+
+````{r}
+# Find the top ten countries that have the largest number of confirmed cases on 2021-09-02 (recommend using pipe!)
+# Hint-1: the following verbs are recommended: select, group_by, summarise, filter
+# Hint-2: filter(rank( desc(X) )) <= 10 will help you identify the top ten values of X
+
+covid19.confirmed.cases %>% 
+  select(Country.Region, `2021-09-02`) %>% 
+  group_by(Country.Region) %>% 
+  summarise(case_sum_02 = sum(`2021-09-02`, na.rm = TRUE)) %>% 
+  filter(rank(desc(case_sum_02)) <= 10 )
+    
+```
+
+Individual excercise (5 mins): how to define daily growth rate?
+
+````{r}
+# Adapt the above code to find the top ten countries that have the highest daily growth rate of confirmed cases on 2021-09-02. 
+#Hint-1: define a new variable, growth_rate, either within summarise() or using mutate()
+#Hint-2: daily growth rate = (cases_day_2 - cases_day_1)/cases_day_2
+
+covid19.confirmed.cases %>% 
+  select(Country.Region, `2021-09-02`,`2021-09-01` ) %>% 
+  group_by(Country.Region) %>% 
+  summarise(case_sum_02 = sum(`2021-09-02`, na.rm = TRUE), case_sum_01 = sum(`2021-09-01`, na.rm = TRUE)) %>%
+  mutate(growth_rate = (case_sum_02 - case_sum_01) / case_sum_01 ) %>% 
+  filter(rank(desc(growth_rate)) <= 10 )
+
+```
+
+# Now let's take a look at the US data!
+
+````{r}
+(CV_US = covid19.US.data() )
+```
+
+Use across() function to select a range of variables
+
+````{r}
+# Operation by row
+# Create a new Table, CV_US_Aug, that contains the by-state sum of daily confirmed cases from 2021-08-01 to 2021-08-31
+
+
+(CV_US_Aug <- CV_US %>% 
+    group_by(Province_State) %>% 
+    summarise(across(`2021-08-01`:`2021-08-31`, sum))
+)
+
+```
+
+Individual excercise (3 mins): use rowSums() to sum by row.
+
+````{r}
+# Find the monthly sum of confirmed cases for each US state in August, 2021. 
+# Hint-1: rowSums(across(`date-1`:`date-2`), na.rm = TRUE) will return the by-row sum of values in a tibble. 
+
+CV_US_Aug %>% 
+    group_by(Province_State) %>%
+    summarise( Sum_Aug_2021 = rowSums(across(`2021-08-01`:`2021-08-31`, na.rm = TRUE)))
+# Your code goes here
+```
+
+Group challenge*: Identify the top ten states that have the highest mean growth rate of COVID cases in August, 2021.  
+
+Hint-1: across() allows arithmetic operations for a range of variables. 
+Hint-2: rowMeans() will return the by-row average of values in a tibble
+
+````{r}
+CV_US %>% 
+   group_by(Province_State) %>%
+   summarise( Sum_Aug_2021 = rowSums(across(`2021-08-01`:`2021-08-31`, na.rm = TRUE))
+              )
+   mutate( -(across`2021-07-31`:`2021-08-30`, sum)/(across`2021-07-31`:`2021-08-30`, sum))
+```
+
+

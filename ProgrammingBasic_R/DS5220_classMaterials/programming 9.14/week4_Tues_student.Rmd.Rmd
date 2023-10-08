@@ -1,0 +1,117 @@
+---
+title: "Transform-Assert"
+author: "John Yang"
+output: html_notebook
+---
+
+# First install the packages
+```{r}
+install.packages("tidyverse")
+install.packages("nycflights13")
+```
+# Now call the libraries
+
+````{r}
+library(nycflights13)
+library(tidyverse)
+library(tidyr)
+```
+
+# Defining four tibbles
+
+````{r}
+table1
+table2
+table3
+table4a  # cases
+table4b  # population
+```
+
+# First, let's do separation!
+
+````{r}
+table3
+table3 %>% 
+  separate(rate, into = c("cases", "population"), sep = "/", convert = TRUE)
+```
+
+Experimenting (1 min): what if you remove "convert = TRUE"?
+
+````{r}
+table3
+table3 %>% 
+  separate(rate, into = c("cases", "population"), sep = "/")
+```
+
+# Second, let's do unite!
+
+````{r}
+table3
+table3 %>% 
+  unite("country-year", country, year, sep = "-")
+```
+
+Individual Challenge (5 mins): Here we have a real life dataset about statistics of injury. 
+First, select the "age_group" variable; 
+Second, separate the age_group to two columns: "start_age" and "end_age"
+Third, unite "start_age" and "end_age" back to one column named "age_group" using "/" as a separator.
+
+````{r}
+tbi_age <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-03-24/tbi_age.csv')
+tbi_age
+tbi_age %>% 
+
+# Your code goes here:
+select(age_group) %>% 
+  separate(age_group, into = c("start_age", "end_age"), sep = "-", convert = TRUE) %>% 
+  unite("age_group", start_age, end_age, sep = "/")
+```
+
+# Third, let's do pivot!
+
+# pivot_longer: converting NAMEs to values
+
+````{r}
+table4a
+table4a %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+```
+
+Individual challenge (2 mins): applying pivot_longer to convert the names of table4b to "year" and the existing values to "population"
+
+````{r}
+table4b 
+
+# Your code goes here:
+table4b %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "population")
+```
+
+# pivot_longer: converting NAMEs from values
+
+````{r}
+table2
+table2 %>%
+  
+    pivot_wider(names_from = type, values_from = count)
+```
+
+Individual challenge (wider or longer?): For the following tibble, `1` and `2` refer to the first and second half of a year, respectively. The values under `1` and `2` refers to the rate of return. Please tidy the data by redefining the names to be "half" and "return".
+
+````{r}
+stocks <- tibble(
+  year  = c(2015, 2016),
+  `1` = c(1.88, 0.92),
+  `2` = c(0.59, 0.17)
+)
+stocks
+
+# Your code goes here:
+stocks %>% 
+  pivot_longer(`1`:`2`, names_to = "half", values_to = "return")
+
+```
+
+assert_rows(col_concat, is_uniq, Plant,Type,Treatment,conc) 
+assert(not_na, Plant)
+
